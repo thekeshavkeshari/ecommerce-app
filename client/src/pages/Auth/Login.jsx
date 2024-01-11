@@ -1,6 +1,7 @@
 import React, {useState} from 'react'
 import Layout from '../../componets/Layout/Layout.jsx'
-import { toast } from 'react-hot-toast';
+// import { toast } from 'react-hot-toast';
+import { enqueueSnackbar } from "notistack";
 import axios from 'axios';
 import {useNavigate,useLocation,NavLink} from "react-router-dom"
 import { useAuth } from '../../context/auth.jsx';
@@ -40,20 +41,22 @@ export default function Login() {
         
 
         if (res && res.data.success) {
-            toast.success(res && res.data.message);
+            // toast.success(res && res.data.message);
+            enqueueSnackbar(res && res.data.message, { variant: "success" });
             // console.log("login se home ja raha hu");
             setAuth({...auth,user:res.data.user,token:res.data.token})
             localStorage.setItem('auth',JSON.stringify(res.data));
             navigate(location.state||"/");
         } else {
-            toast.error(res.data.message);
+            enqueueSnackbar(res && res.data.message, { variant: "warning" });
         }
         // toast.success("Kuch to huA"+process.env.PORT);
 
         
       } catch (error) {
         console.log(error);
-        toast.error("Something went wrong");
+        // toast.error("Something went wrong");
+        enqueueSnackbar("Something went wrong", { variant: "error" });
       }
       
     }

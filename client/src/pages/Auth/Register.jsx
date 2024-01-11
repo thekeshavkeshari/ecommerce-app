@@ -1,6 +1,7 @@
 import React, {useState} from 'react'
 import Layout from '../../componets/Layout/Layout.jsx'
-import { toast } from 'react-hot-toast';
+// import { toast } from 'react-hot-toast';
+import { enqueueSnackbar } from "notistack";
 import axios from 'axios';
 import {useNavigate} from "react-router-dom"
 
@@ -23,16 +24,20 @@ export default function Register () {
         const res = await axios.post(`${"http://localhost:8080"}/api/v1/auth/register`,{name,email,password,phone,address,question});
 
         if (res.data.success) {
-            toast.success(res.data.message,{ duration: 4000});
+            // toast.success(res.data.message,{ duration: 4000});
+            enqueueSnackbar(res.data.message,{variant:"success"});
             //console.log("login ke pass");
             navigate("/login");
         } else {
-            toast.error(res.data.message);
+            // toast.error(res.data.message);
+            enqueueSnackbar(res.data.message,{variant:"warning"});
+            
         }
         
       } catch (error) {
         console.log(error);
-        toast.error("Something went wrong")
+        // toast.error("Something went wrong");
+        enqueueSnackbar("Something went wrong",{variant:"error"});
       }
     }
 

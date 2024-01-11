@@ -3,7 +3,9 @@ import { FiMenu } from "react-icons/fi";
 import { RxCross2 } from "react-icons/rx";
 import { NavLink} from "react-router-dom";
 import { useAuth } from '../../context/auth.jsx';
-import toast from 'react-hot-toast';
+// import toast from 'react-hot-toast';
+import { enqueueSnackbar } from "notistack";
+
 
 
 
@@ -17,7 +19,9 @@ export default function Header(props) {
       }
     );
     localStorage.removeItem('auth');
-    toast.success("Logout Successfully");
+    enqueueSnackbar("That was easy!",{variant:"success"});
+    // toast.success("Logout Successfully");
+
   }
   
   const [cross, setCross] = useState(false);
@@ -124,6 +128,7 @@ export default function Header(props) {
                       LOGOUT
                     </NavLink>
                   </li>
+                  
                 </>
               )}
               <li className="p-2">

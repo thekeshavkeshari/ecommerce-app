@@ -160,8 +160,8 @@ export const loginController = async (req, res) => {
     const match = await comparePassword(password, user.password);
 
     if (!match) {
-      res.status(200).send({
-        success: true,
+      return res.status(200).send({
+        success: false,
         message: "pass galat hai bhai",
       });
     }
