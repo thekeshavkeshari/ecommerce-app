@@ -19,11 +19,9 @@ app.use(express.urlencoded({extended:true}));
 app.use(morgan('dev'));
 
 //routes
-
 app.use('/api/v1/auth',authRoute);
 
 //rest api 
-
 // app.post('/',(req,res)=>{
 //     console.log(req.body);
 //     console.log("first try");
@@ -32,7 +30,6 @@ app.use('/api/v1/auth',authRoute);
 //         message:"welcome to ecommerce app"
 //     });
 // });
-
 
 const PORT = process.env.PORT||8080;
 app.listen(PORT,()=>{
