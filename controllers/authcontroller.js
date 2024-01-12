@@ -46,7 +46,7 @@ export const registerController = async (req, res) => {
     if (existingUser) {
       return res.status(200).send({
         success: false,
-        message: "Already Register please login",
+        message: "Already Registered please login",
       });
     }
 
@@ -63,7 +63,7 @@ export const registerController = async (req, res) => {
 
     res.status(201).send({
       success: true,
-      message: "User Register Successfully",
+      message: "User Registered Successfully",
       user,
     });
   } catch (error) {
@@ -139,7 +139,7 @@ export const loginController = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(404).send({
+      return res.status(201).send({
         success: false,
         message: "Invalid credential",
       });
@@ -149,8 +149,9 @@ export const loginController = async (req, res) => {
     const user = await userModel.findOne({ email });
 
     if (!user) {
-      return res.status(404).send({
-        success: true,
+      console.log("User not find");
+      return res.status(200).send({
+        success: false,
         message: "You are not Registered",
       });
     }
@@ -162,7 +163,7 @@ export const loginController = async (req, res) => {
     if (!match) {
       return res.status(200).send({
         success: false,
-        message: "pass galat hai bhai",
+        message: "Wrong Password",
       });
     }
 
@@ -175,10 +176,12 @@ export const loginController = async (req, res) => {
       success: true,
       message: "Login successfully",
       user: {
+        _id:user._id,
         name: user.name,
         email: user.email,
         phone: user.phone,
         address: user.address,
+        role:user.role
       },
       token,
     });

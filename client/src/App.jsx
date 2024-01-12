@@ -9,6 +9,13 @@ import Login from "./pages/Auth/Login.jsx";
 import ForgotPass from "./pages/Auth/ForgotPass.jsx";
 import Dashboard from "./pages/User/Dashboard.jsx"
 import PrivateRoute from "./componets/Routes/Private.jsx";
+import AdminRoute from "./componets/Routes/AdminRoute.jsx";
+import AdminDashboard from "./pages/Admin/AdminDashboard.jsx";
+import CreateCategory from "./pages/Admin/CreateCategory.jsx";
+import CreateProduct from "./pages/Admin/CreateProduct.jsx";
+import Users from "./pages/Admin/Users.jsx";
+import Orders from "./pages/User/Orders.jsx";
+import Profile from "./pages/User/Profile.jsx";
 function App() {
   return (
     <>
@@ -17,7 +24,16 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/dashboard" element={<PrivateRoute />}>
-          <Route path="" element={<Dashboard />} />
+          <Route path="user" element={<Dashboard />} />
+          <Route path="user/orders" element={<Orders />} />
+          <Route path="user/profile" element={<Profile />} />
+          <Route path="user/orders" element={<Orders />} />
+        </Route>
+        <Route path="/dashboard" element={<AdminRoute />}>
+          <Route path="admin" element={<AdminDashboard />} />
+          <Route path="admin/create-category" element={<CreateCategory />} />
+          <Route path="admin/create-product" element={<CreateProduct />} />
+          <Route path="admin/users" element={<Users />} />
         </Route>
         <Route path="/policy" element={<Policy />} />
         <Route path="/register" element={<Register />} />

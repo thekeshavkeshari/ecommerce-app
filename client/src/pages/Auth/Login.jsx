@@ -40,6 +40,7 @@ export default function Login() {
         const res = await axios.post(`${"http://localhost:8080"}/api/v1/auth/login`,{email,password});
         
 
+        
         if (res && res.data.success) {
             // toast.success(res && res.data.message);
             enqueueSnackbar(res && res.data.message, { variant: "success" });
@@ -47,10 +48,11 @@ export default function Login() {
             setAuth({...auth,user:res.data.user,token:res.data.token})
             localStorage.setItem('auth',JSON.stringify(res.data));
             navigate(location.state||"/");
-        } else {
-            enqueueSnackbar(res && res.data.message, { variant: "warning" });
+        } else{
+          console.log(res);
+          enqueueSnackbar(res.data.message, { variant: "warning" });
         }
-        // toast.success("Kuch to huA"+process.env.PORT);
+       
 
         
       } catch (error) {
