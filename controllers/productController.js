@@ -1,118 +1,89 @@
 import slugify from "slugify";
+import crypto from "crypto";
 import productModel from "../models/productModel.js";
-import fs from "fs";
-import formidable from "formidable";
-// export const createProductController = (req, res) => {
-//   try {
-//     const form = formidable();
-//     form.parse(req, async (err, fields, files) => {
-//       if (err) {
-//         return res.status(500).send("Error parsing form");
-//       }
-//       const { name, description, price, category, quantity } = fields;
-//       const { photo } = files;
-//       // console.log(files);
-//       //validation
-//       switch (true) {
-//         case !name:
-//           return res.status(500).send({ error: "Name is Required" });
-//         case !description:
-//           return res.status(500).send({ error: "description is Required" });
-//         case !price:
-//           return res.status(500).send({ error: "price is Required" });
-//         case !category:
-//           return res.status(500).send({ error: "category is Required" });
-//         case !quantity:
-//           return res.status(500).send({ error: "quantity is Required" });
-//         case photo && photo.size > 1000000:
-//           return res
-//             .status(500)
-//             .send({ error: "photo is Required and should be less than 1 mb" });
-//       }
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
-//       console.log(req);
-//       const products = new productModel({
-//         name: [name],
-//         description: [description],
-//         price: [price],
-//         category: [category],
-//         quantity: [quantity],
-//         slag: slugify([name]),
-//         photo: {
-//           data: files.photo.data,
-//           contentType: files.photo.type,
-//         },
-//       });
-//       // if (photo) {
-//       //   products.photo.data = fs.readFileSync(photo.path);
-//       //   products.photo.contentType = photo.type;
-//       // }
-//       await products.save();
+const bucketName = process.env.AWS_BUCKET_NAME;
+const region = process.env.AWS_BUCKET_REGION;
+const accessKeyId = process.env.AWS_ACCESS_KEY;
+const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 
-//       res.status(201).send({
-//         success: true,
-//         message: "Product Created Successfully",
-//         products,
-//       });
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send({
-//       success: false,
-//       error,
-//       message: "Error in creating product",
-//     });
-//   }
-// };
+const s3Client = new S3Client({
+  region,
+  credentials: {
+    accessKeyId,
+    secretAccessKey,
+  },
+});
 
+const generateFileName = (bytes = 32) =>
+  crypto.randomBytes(bytes).toString("hex");
 
 export const createProductController = async (req, res) => {
-  const form = formidable({ multiples: true });
-
   try {
-    const { fields, files } = await parseFormAsync(form, req);
-    console.log(fields);
-    console.log(files);
-    
+    // Checking all data
+    const { name, description, price, category, quantity } = req.body;
 
-    const imageFiles = files.photo;
-    if (!imageFiles || imageFiles.length === 0 || !imageFiles[0].filepath) {
-      return res.status(400).send("Invalid or missing photo field in the form");
+    // For Checking All fields
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const imageFile = imageFiles[0];
-    const imageBuffer = fs.readFileSync(imageFile.filepath);
+    switch (true) {
+      case !name: {
+        return res.status(400).json({ error: "Name is Required" });
+      }
+      case !description: {
+        return res.status(400).json({ error: "Description is Required" });
+      }
+      case !price: {
+        return res.status(400).json({ error: "Price is Required" });
+      }
+      case !category: {
+        return res.status(400).json({ error: "Category is Required" });
+      }
+      case !quantity: {
+        return res.status(400).json({ error: "Quantity is Required" });
+      }
+    }
 
+    const file = req.file;
+
+    // Configure the upload details to send to S3
+    const fileName = generateFileName();
+
+    console.log(bucketName);
+    // console.log(fileBuffer);
+    console.log(fileName);
+    console.log(file.mimetype);
+
+    const uploadParams = {
+      Bucket: bucketName,
+      Body: file.buffer,
+      Key: fileName,
+      ContentType: file.mimetype,
+    };
+    //Send the upload to S3
+    const imageRes = await s3Client.send(new PutObjectCommand(uploadParams));
+    
+
+    //For Adding product in MongoDB
     const newProduct = new productModel({
-      name: fields.name[0],
-      description: fields.description[0],
-      slug:slugify(fields.name[0]),
-      price: fields.price[0],
-      category: fields.category[0] ?? null,
-      quantity: fields.quantity[0] ?? 0,
-      photo: {
-        data: imageBuffer,
-        contentType: imageFile.mimetype,
-      },
+      ...req.body,
+      slug: slugify(name),
+      photo: fileName,
     });
 
-    await newProduct.save();
-    res.send("Product created successfully");
+    const result = await newProduct.save();
+    res.status(200).send({
+      success: true,
+      message: "Product Added Successfully",
+      result,
+      imageRes
+    });
   } catch (error) {
-    console.error("Error creating product:", error);
-    res.status(500).send("Error creating product");
+    res.status(500).send({ success: false, error });
   }
 };
 
-const parseFormAsync = (form, req) => {
-  return new Promise((resolve, reject) => {
-    form.parse(req, (err, fields, files) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve({ fields, files });
-      }
-    });
-  });
-};
 
