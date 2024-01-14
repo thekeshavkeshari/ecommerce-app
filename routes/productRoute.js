@@ -1,6 +1,9 @@
 import express from "express";
 import { isAdmin, requireSignIn } from "../middlewares/authMiddleware.js";
-import { createProductController } from "../controllers/productController.js";
+import {
+  createProductController,
+  getProductController,
+} from "../controllers/productController.js";
 import multer from "multer";
 
 
@@ -14,6 +17,10 @@ router.post(
   isAdmin,
   upload.single('photo'),
   createProductController
+);
+router.get(
+  "/get-product",
+  getProductController
 );
 
 export default router;

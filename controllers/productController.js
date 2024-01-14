@@ -65,7 +65,6 @@ export const createProductController = async (req, res) => {
     };
     //Send the upload to S3
     const imageRes = await s3Client.send(new PutObjectCommand(uploadParams));
-    
 
     //For Adding product in MongoDB
     const newProduct = new productModel({
@@ -79,11 +78,32 @@ export const createProductController = async (req, res) => {
       success: true,
       message: "Product Added Successfully",
       result,
-      imageRes
+      imageRes,
     });
   } catch (error) {
-    res.status(500).send({ success: false, error });
+    res
+      .status(500)
+      .send({ success: false, message: "Error in Adding Product", error });
   }
 };
 
-
+export const getProductController = async (req, res) => {
+  try {
+    const products = await productModel
+      .find({})
+      .limit(12)
+      .sort({ createdAt: -1 });
+    res
+      .status(200)
+      .send({
+        success: true,
+        message: "All Products",
+        products,
+        total: products.length,
+      });
+  } catch (error) {
+    res
+      .status(500)
+      .send({ success: false, message: "Error in finding Products", error });
+  }
+};
