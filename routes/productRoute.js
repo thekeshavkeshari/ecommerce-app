@@ -4,6 +4,8 @@ import {
   createProductController,
   getProductController,
   getSingleProductController,
+  deleteProductController,
+  updateProductController,
 } from "../controllers/productController.js";
 import multer from "multer";
 
@@ -19,6 +21,14 @@ router.post(
   upload.single('photo'),
   createProductController
 );
+
+router.post(
+  "/update-product/:pid",
+  requireSignIn,
+  isAdmin,
+  upload.single('photo'),
+  updateProductController
+);
 router.get(
   "/get-product",
   getProductController
@@ -26,6 +36,11 @@ router.get(
 router.get(
   "/get-product/:slug",
   getSingleProductController
+);
+
+router.delete(
+  "/product/:pid",
+  deleteProductController
 );
 
 export default router;
