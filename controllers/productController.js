@@ -1,7 +1,13 @@
 import slugify from "slugify";
 import crypto from "crypto";
 import productModel from "../models/productModel.js";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
+
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const bucketName = process.env.AWS_BUCKET_NAME;
 const region = process.env.AWS_BUCKET_REGION;
@@ -91,16 +97,54 @@ export const getProductController = async (req, res) => {
   try {
     const products = await productModel
       .find({})
+      .populate("category")
       .limit(12)
       .sort({ createdAt: -1 });
+
+    for (let product of products) {
+      // For each post, generate a signed URL and save it to the post object
+      product.photo = await getSignedUrl(
+        s3Client,
+        new GetObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: product.photo,
+        }),
+        { expiresIn: 60*60*60 } // 60 seconds
+      );
+    }  
+    
+      
+    res.status(200).send({
+      success: true,
+      message: "All Products",
+      total: products.length,
+      products,
+    });
+  } catch (error) {
     res
-      .status(200)
-      .send({
-        success: true,
-        message: "All Products",
-        products,
-        total: products.length,
-      });
+      .status(500)
+      .send({ success: false, message: "Error in finding Products", error });
+  }
+};
+export const getSingleProductController = async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const product = await productModel.findOne({ slug }).populate("category");
+
+    product.photo = await getSignedUrl(
+      s3Client,
+      new GetObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: product.photo,
+      }),
+      { expiresIn: 60*60*60 } // 60 seconds
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Product",
+      product,
+    });
   } catch (error) {
     res
       .status(500)
