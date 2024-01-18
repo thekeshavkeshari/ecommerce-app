@@ -1,13 +1,13 @@
 import React from "react";
 import Layout from "../../componets/Layout/Layout";
 import AdminMenu from "../../componets/Layout/AdminMenu";
+import AdminContent from "./AdminContent.jsx";
 
 const Users = () => {
   return (
-    <Layout title={'Dashboard All Users'}>
-      <AdminMenu />
-      <h1>All Users</h1>
-    </Layout>
+    <AdminContent title={"Users "}>
+      <h3>Users</h3>
+    </AdminContent>
   );
 };
 

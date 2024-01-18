@@ -15,7 +15,7 @@ export default function Layout({
 }) {
   // console.log(title);
   return (
-    <div className="flex flex-col min-h-[100vh] bg-[url('./images/design-1704971668624.png')] bg-cover backdrop-blur-3xl">
+    <body className="flex flex-col min-h-screen bg-[url('./images/design-1704971668624.png')] bg-cover backdrop-blur-3xl">
       <Helmet>
         <meta charSet="utf-8" />
         <meta property="og:title" content={title} />
@@ -24,12 +24,11 @@ export default function Layout({
         <meta name="keywords" content={keywords} />
         <title>{title}</title>
       </Helmet>
-      <Header title={title} />
-      <main>{children}</main>
-      <Footer className="mt-auto fixed" />
 
-      
-    </div>
+      <Header title={title} />
+      <main className="flex-1 ">{children}</main>
+      <Footer className="mt-auto fixed" />
+    </body>
   );
 }
 
