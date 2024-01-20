@@ -125,7 +125,7 @@ const TableContent = ({ name, categoryid, getCategory }) => {
           </button>
         </td>
       </tr>
-      <hr />
+      
       {show && (
         <tr className="my-2">
           <td>

@@ -8,7 +8,7 @@ const AdminContent = ({ children,title }) => {
     <Layout title={title}>
       <div className="flex flex-col md:flex-row w-full ">
         <AdminMenu />
-        <div className="flex-col flex gap-2 text-xl">{children}</div>
+        <div className="flex-col flex md:flex-1 gap-2 text-xl">{children}</div>
       </div>
     </Layout>
   );

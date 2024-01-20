@@ -4,7 +4,13 @@ import Dropdown from "../../componets/Dropdown.jsx";
 import axios from "axios";
 import { enqueueSnackbar } from "notistack";
 
-const CreateProduct = () => {
+import { useNavigate, useParams } from "react-router-dom";
+// import Select from "react-select/dist/declarations/src/Select.js";
+// const { Option } = Select;
+
+const UpdateProduct = () => {
+  const navigate = useNavigate();
+  const params = useParams();
   const [categories, setCategories] = useState([]);
   const [product, setProduct] = useState({
     name: "",
@@ -16,14 +22,33 @@ const CreateProduct = () => {
     shipping: false,
   });
 
+  //get single product
+  const getSingleProduct = async () => {
+    try {
+      const { data } = await axios.get(
+        `http://localhost:8080/api/v1/product/get-product/${params.slug}`
+      );
+      // console.log(data.product);
+      setProduct(data.product);
+      const awsImageUrl = data.product.photo;
+      console.log(awsImageUrl);
+      const response = await axios.get(awsImageUrl, {
+        responseType: "arraybuffer",
+      });
+      // console.log(response);
+    } catch (error) {
+      console.log("Error in getting Single Product");
+    }
+  };
+
   function handleSet(e) {
     console.log(e.target.files[0]);
     setProduct((prev) => ({ ...prev, photo: e.target.files[0] }));
   }
 
   function handeler(e) {
-     const { name, value } = e.target;
-     setProduct((prev) => ({ ...prev, [name]: value }));
+    const { name, value } = e.target;
+    setProduct((prev) => ({ ...prev, [name]: value }));
   }
 
   const getCategory = async () => {
@@ -41,14 +66,35 @@ const CreateProduct = () => {
 
   useEffect(() => {
     getCategory();
+    getSingleProduct();
   }, []);
 
-  const sendToCreate =async (e)=>{
+  const deleteProduct = async()=>{
+try {
+    let ans = window.prompt("Are you sure ?")
+    if (!ans) {
+        return;
+    }
+  const { data } = await axios.delete(
+    `http://localhost:8080/api/v1/product/product/${product._id}`,
+    product
+  );
+  if (data?.success) {
+    enqueueSnackbar(data.message, { variant: "success" });
+    navigate("/dashboard/admin/products");
+  }
+} catch (error) {
+  enqueueSnackbar("Somthing went wrong", { variant: "error" });
+  console.log(error);
+}
+  }
+
+  const sendToCreate = async (e) => {
     e.preventDefault();
-    console.log(product);
+    // console.log(product);
     try {
       const { data } = await axios.post(
-        "http://localhost:8080/api/v1/product/create-product",
+        `http://localhost:8080/api/v1/product/update-product/${product._id}`,
         product,
         {
           headers: {
@@ -58,17 +104,18 @@ const CreateProduct = () => {
       );
       if (data?.success) {
         enqueueSnackbar(data.message, { variant: "success" });
+        navigate("/dashboard/admin/products");
       }
     } catch (error) {
       enqueueSnackbar("Somthing went wrong", { variant: "error" });
       console.log(error);
     }
-  }
+  };
 
   return (
-    <AdminContent title={"Dashboard - Create Product"}>
+    <AdminContent title={"Dashboard - Update Product"}>
       <div className="m-6">
-        <h2 className="mb-4 text-2xl text-bold">Add a Product</h2>
+        <h2 className="mb-4 text-2xl text-bold">Update Product</h2>
         <form onSubmit={sendToCreate} className="w-full">
           {categories.length > 0 ? (
             <Dropdown categories={categories} setProduct={setProduct} />
@@ -78,7 +125,9 @@ const CreateProduct = () => {
 
           <div className="mt-4 w-full">
             <label className="rounded block  bg-black text-white p-2 w-full">
-              {product.photo ? product.photo.name : "Upload an image"}
+              {product.photo
+                ? product.photo.name || "Select an image"
+                : "Upload an image"}
               <input
                 type="file"
                 name="photo"
@@ -86,7 +135,6 @@ const CreateProduct = () => {
                 accept="image/*"
                 className="mt-2 w-full"
                 hidden
-                required
               />
             </label>
           </div>
@@ -95,10 +143,13 @@ const CreateProduct = () => {
             {product.photo && (
               <div>
                 <img
-                  src={URL.createObjectURL(product.photo)}
+                  src={
+                    typeof product.photo === "string"
+                      ? product.photo
+                      : URL.createObjectURL(product.photo)
+                  }
                   alt="image"
                   className="rounded w-[200px]"
-
                 />
               </div>
             )}
@@ -145,17 +196,32 @@ const CreateProduct = () => {
               type="checkbox"
               name="shipping"
               value={product.shipping}
-              onChange={()=>setProduct((prev)=>({...prev,shipping:!prev.shipping}))}
+              checked={product.shipping}
+              onChange={() =>
+                setProduct((prev) => ({ ...prev, shipping: !prev.shipping }))
+              }
               className="w-10 border-black h-10 border-2 rounded bg-transparent my-1 "
             />
-            <button className="rounded w-full bg-black text-white h-10" type="submit">
-              Add
-            </button>
+
+            <div className="w-full h-10 f">
+              <button
+                className=" bg-black text-white rounded w-full p-2"
+                type="submit"
+              >
+                Update
+              </button>
+            </div>
           </div>
         </form>
+        <button
+          className=" bg-black mt-4 text-white rounded w-full p-2"
+          onClick={deleteProduct}
+        >
+          Delete
+        </button>
       </div>
     </AdminContent>
   );
 };
 
-export default CreateProduct;
+export default UpdateProduct;

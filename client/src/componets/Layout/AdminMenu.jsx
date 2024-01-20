@@ -20,6 +20,11 @@ const AdminMenu = () => {
             </NavLink>
           </li>
           <li className="w-full p-5 bg-black text-white rounded md:rounded-none">
+            <NavLink to="/dashboard/admin/products">
+              Products
+            </NavLink>
+          </li>
+          <li className="w-full p-5 bg-black text-white rounded md:rounded-none">
             <NavLink to="/dashboard/admin/users">Users</NavLink>
           </li>
         </ul>
