@@ -3,8 +3,10 @@ import AdminContent from "./AdminContent.jsx";
 import Dropdown from "../../componets/Dropdown.jsx";
 import axios from "axios";
 import { enqueueSnackbar } from "notistack";
+import { useNavigate } from "react-router-dom";
 
 const CreateProduct = () => {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [product, setProduct] = useState({
     name: "",
@@ -58,6 +60,7 @@ const CreateProduct = () => {
       );
       if (data?.success) {
         enqueueSnackbar(data.message, { variant: "success" });
+        navigate("/dashboard/admin/products");
       }
     } catch (error) {
       enqueueSnackbar("Somthing went wrong", { variant: "error" });

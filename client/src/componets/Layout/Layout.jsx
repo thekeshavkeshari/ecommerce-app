@@ -15,7 +15,7 @@ export default function Layout({
 }) {
   // console.log(title);
   return (
-    <div className="flex flex-col min-h-screen bg-[url('./images/design-1704971668624.png')] bg-cover backdrop-blur-3xl">
+    <div className="flex flex-col min-h-screen  bg-cover backdrop-blur-3xl">
       <Helmet>
         <meta charSet="utf-8" />
         <meta property="og:title" content={title} />

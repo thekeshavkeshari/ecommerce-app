@@ -3,6 +3,7 @@ import AdminContent from "./AdminContent.jsx";
 import Dropdown from "../../componets/Dropdown.jsx";
 import axios from "axios";
 import { enqueueSnackbar } from "notistack";
+import Select from "react-select";
 
 import { useNavigate, useParams } from "react-router-dom";
 // import Select from "react-select/dist/declarations/src/Select.js";
@@ -22,6 +23,9 @@ const UpdateProduct = () => {
     shipping: false,
   });
 
+  
+  
+
   //get single product
   const getSingleProduct = async () => {
     try {
@@ -30,12 +34,12 @@ const UpdateProduct = () => {
       );
       // console.log(data.product);
       setProduct(data.product);
-      const awsImageUrl = data.product.photo;
-      console.log(awsImageUrl);
-      const response = await axios.get(awsImageUrl, {
+      const response = await axios.get(data.product.photo, {
         responseType: "arraybuffer",
+        // Specify the response type as arraybuffer
       });
-      // console.log(response);
+      console.log("This res is from /n" + response);
+
     } catch (error) {
       console.log("Error in getting Single Product");
     }
@@ -69,25 +73,31 @@ const UpdateProduct = () => {
     getSingleProduct();
   }, []);
 
-  const deleteProduct = async()=>{
-try {
-    let ans = window.prompt("Are you sure ?")
-    if (!ans) {
+  const arrayOfCategories = categories.map((el) => ({
+    value: el.name,
+    label: el.name.charAt(0).toUpperCase() + el.name.slice(1),
+    id: el._id,
+  }));
+
+  const deleteProduct = async () => {
+    try {
+      let ans = window.prompt("Are you sure ?");
+      if (!ans) {
         return;
+      }
+      const { data } = await axios.delete(
+        `http://localhost:8080/api/v1/product/product/${product._id}`,
+        product
+      );
+      if (data?.success) {
+        enqueueSnackbar(data.message, { variant: "success" });
+        navigate("/dashboard/admin/products");
+      }
+    } catch (error) {
+      enqueueSnackbar("Somthing went wrong", { variant: "error" });
+      console.log(error);
     }
-  const { data } = await axios.delete(
-    `http://localhost:8080/api/v1/product/product/${product._id}`,
-    product
-  );
-  if (data?.success) {
-    enqueueSnackbar(data.message, { variant: "success" });
-    navigate("/dashboard/admin/products");
-  }
-} catch (error) {
-  enqueueSnackbar("Somthing went wrong", { variant: "error" });
-  console.log(error);
-}
-  }
+  };
 
   const sendToCreate = async (e) => {
     e.preventDefault();
@@ -112,13 +122,16 @@ try {
     }
   };
 
+
+
   return (
     <AdminContent title={"Dashboard - Update Product"}>
       <div className="m-6">
         <h2 className="mb-4 text-2xl text-bold">Update Product</h2>
         <form onSubmit={sendToCreate} className="w-full">
           {categories.length > 0 ? (
-            <Dropdown categories={categories} setProduct={setProduct} />
+             <Dropdown categories={categories} setProduct={setProduct} selectedToUpdate={product.category} />
+            // <Select options={arrayOfCategories} />
           ) : (
             <div>Loading categories...</div>
           )}
