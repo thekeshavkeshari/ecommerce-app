@@ -23,23 +23,29 @@ const UpdateProduct = () => {
     shipping: false,
   });
 
-  
-  
-
   //get single product
   const getSingleProduct = async () => {
     try {
       const { data } = await axios.get(
         `http://localhost:8080/api/v1/product/get-product/${params.slug}`
       );
-      // console.log(data.product);
+      console.log(data.product);
       setProduct(data.product);
-      const response = await axios.get(data.product.photo, {
-        responseType: "arraybuffer",
-        // Specify the response type as arraybuffer
-      });
-      console.log("This res is from /n" + response);
 
+      const response = await axios.get(
+        `http://localhost:8080/api/v1/product/get-product-photo/${data.product._id}`,
+        { responseType: "arraybuffer" }
+      );
+      const pic = new File([new Blob([response.data])], params.slug, {
+        type: "image/jpeg",
+        lastModified: Date.now(),
+      });
+      console.log(pic);
+
+      setProduct((prev) => ({
+        ...prev,
+        photo: pic,
+      }));
     } catch (error) {
       console.log("Error in getting Single Product");
     }
@@ -122,17 +128,19 @@ const UpdateProduct = () => {
     }
   };
 
-
-
   return (
     <AdminContent title={"Dashboard - Update Product"}>
       <div className="m-6">
         <h2 className="mb-4 text-2xl text-bold">Update Product</h2>
         <form onSubmit={sendToCreate} className="w-full">
           {categories.length > 0 ? (
-             <Dropdown categories={categories} setProduct={setProduct} selectedToUpdate={product.category} />
-            // <Select options={arrayOfCategories} />
+            <Dropdown
+              categories={categories}
+              setProduct={setProduct}
+              selectedToUpdate={product.category}
+            />
           ) : (
+            // <Select options={arrayOfCategories} />
             <div>Loading categories...</div>
           )}
 
@@ -147,6 +155,7 @@ const UpdateProduct = () => {
                 onChange={handleSet}
                 accept="image/*"
                 className="mt-2 w-full"
+              
                 hidden
               />
             </label>

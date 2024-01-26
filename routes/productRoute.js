@@ -6,6 +6,8 @@ import {
   getSingleProductController,
   deleteProductController,
   updateProductController,
+  getSingleProductImageController,
+  productFiltersController,
 } from "../controllers/productController.js";
 import multer from "multer";
 
@@ -37,11 +39,20 @@ router.get(
   "/get-product/:slug",
   getSingleProductController
 );
+// for getting image 
+router.get(
+  "/get-product-photo/:id",
+  getSingleProductImageController
+);
+
 
 router.delete(
   "/product/:pid",
   deleteProductController
 );
+
+//filter product
+router.post('/product-filters',productFiltersController)
 
 export default router;
 
