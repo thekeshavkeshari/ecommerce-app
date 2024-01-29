@@ -2,10 +2,6 @@ import React from "react";
 import Header from "./Header.jsx";
 import Footer from "./Footer.jsx";
 import { Helmet } from "react-helmet";
-// import { Toaster } from "react-hot-toast";
-
-
-
 export default function Layout({
   children,
   title,
@@ -15,7 +11,8 @@ export default function Layout({
 }) {
   // console.log(title);
   return (
-    <div className="flex flex-col min-h-screen  bg-cover backdrop-blur-3xl">
+    // Avoid this class element if you want to position any child element backdrop-blur-3xl 
+    <div className="flex flex-col min-h-screen bg-cover">
       <Helmet>
         <meta charSet="utf-8" />
         <meta property="og:title" content={title} />

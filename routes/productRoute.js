@@ -8,6 +8,8 @@ import {
   updateProductController,
   getSingleProductImageController,
   productFiltersController,
+  productCountController,
+  productListController,
 } from "../controllers/productController.js";
 import multer from "multer";
 
@@ -52,8 +54,20 @@ router.delete(
 );
 
 //filter product
-router.post('/product-filters',productFiltersController)
+router.post('/product-filters',productFiltersController);
+
+// product count 
+router.get('/product-count',productCountController);
+
+
+//product list 
+router.get('/product-list/:page',productListController)
 
 export default router;
+
+
+
+
+
 
 

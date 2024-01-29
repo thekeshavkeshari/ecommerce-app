@@ -358,15 +358,14 @@ function getContentTypeFromImageFormat(format) {
 }
 
 //filters
-export const productFiltersController = async (req,res) => {
+export const productFiltersController = async (req, res) => {
   try {
-
-    const {checked,value} = req.body;
+    const { checked, value, page } = req.body;
     let args = {};
-    if(checked?.length>0) args.category = checked;
-    if(value?.length) args.price = {$gte:value[0],$lte:value[1]};
+    if (checked?.length > 0) args.category = checked;
+    if (value?.length) args.price = { $gte: value[0], $lte: value[1] };
 
-    const products = await productModel.find(args);
+    const products = await productModel.find(args).limit(6* parseInt(page));
 
     for (let product of products) {
       // For each post, generate a signed URL and save it to the post object
@@ -381,17 +380,63 @@ export const productFiltersController = async (req,res) => {
     }
 
     res.status(200).send({
-      success:true,
-      products
-    })
-
-    
+      success: true,
+      products,
+    });
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      success:false,
-      message:'Error while Filtering',
-      error:error
+      success: false,
+      message: "Error while Filtering",
+      error: error,
+    });
+  }
+};
+
+export const productCountController = async (req, res) => {
+  try {
+    const total = await productModel.find({}).estimatedDocumentCount();
+    console.log(total);
+    res.status(200).send({
+      success: true,
+      total,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error while Counting",
+      error,
+    });
+  }
+};
+
+export const productListController = async (req,res) => {
+  try {
+    const perPage = 6;
+    const page = req.params.page ? req.params.page : 1;
+    const products = await productModel.find({}).skip((+page - 1) * (+perPage)).limit(perPage).sort({createdAt:-1});
+    for (let product of products) {
+      // For each post, generate a signed URL and save it to the post object
+      product.photo = await getSignedUrl(
+        s3Client,
+        new GetObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: product.photo,
+        }),
+        { expiresIn: 60 * 60 * 60 } // 60 seconds
+      );
+    }
+    res.status(200).send({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in Page Controller",
+      error,
     });
   }
 };

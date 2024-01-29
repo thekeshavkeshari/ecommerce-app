@@ -5,16 +5,14 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Slider from "@mui/material/Slider";
+import CircularProgress from "@mui/material/CircularProgress";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 function valuetext(value) {
   return `${value}°C`;
 }
 
-
-
-
 export default function HomePage() {
-  const [auth, setAuth] = useAuth();
   const [product, setProduct] = useState([]);
   const [categories, setCategories] = useState([]);
   const [checked, setChecked] = useState([]);
@@ -22,7 +20,56 @@ export default function HomePage() {
   const [maxRange, setMaxRange] = useState(100);
   const [value, setValue] = React.useState([0, 100]);
   const [filter, setFilter] = useState(false);
+  const [spinner, setSpinner] = useState(false);
+  const [total, setTotal] = useState(1);
+  const [page, setPage] = useState(1);
+  const [isScroll, setScroll] = useState(true);
 
+  //get all products
+  const getAllProducts = async () => {
+    try {
+      // setSpinner(true);
+      // console.log("hi bro");
+      if (product.length >= total) {
+        // console.log("mai if ke ander aa gaya aur product length = ",product.length," Total length :",total);
+        setScroll(false);
+        return;
+      }
+      const { data } = await axios.get(
+        `http://localhost:8080/api/v1/product/product-list/${page}`
+      );
+      console.log("Page : ", page);
+      setPage(page + 1);
+      // console.log(data.products);
+      setProduct((prev) => [...prev, ...data.products]);
+
+      const maxPrice = data.products.reduce(
+        (max, obj) => (obj.price > max.price ? obj : max),
+        data.products[0]
+      ).price;
+      setMaxRange(maxPrice);
+      setValue([0, maxPrice]);
+    } catch (error) {
+      setSpinner(false);
+      console.log(error);
+    }
+  };
+
+  const getTotal = async () => {
+    try {
+      const { data } = await axios.get(
+        `http://localhost:8080/api/v1/product/product-count`
+      );
+
+      setTotal(data.total);
+
+      // console.log(data.total);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // CodeFor Filters
   const handleChecked = (value, id) => {
     let all = [...checked];
     if (value) {
@@ -34,34 +81,46 @@ export default function HomePage() {
     console.log(all);
   };
 
+  // Price Range
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
-  //get all products
-  const getAllProducts = async () => {
+  //get filterd product
+  const filterProduct = async () => {
     try {
-      const { data } = await axios.get(
-        "http://localhost:8080/api/v1/product/get-product"
+      const { data } = await axios.post(
+        `http://localhost:8080/api/v1/product/product-filters`,
+        { checked, value, page }
       );
-      setProduct(data.products);
+      setProduct(data?.products);
 
-      const maxPrice = 
-      data.products.reduce(
+      const maxPrice = data.products.reduce(
         (max, obj) => (obj.price > max.price ? obj : max),
         data.products[0]
       ).price;
-      setMaxRange(
-        maxPrice
-      );
+      setMaxRange(maxPrice);
       setValue([0, maxPrice]);
     } catch (error) {
       console.log(error);
     }
   };
+
+  // useEffect(() => {
+  //   if (checked.length || value.length) filterProduct();
+  // }, [checked, value]);
+
   //life cycle method
+  // useEffect(() => {
+  //   getTotal();
+  //   if (!checked.length){ getAllProducts()};
+  //   //eslint-disable-next-line
+  // }, []);
+
   useEffect(() => {
-    if (!checked.length) getAllProducts();
+    getTotal();
+    getAllProducts();
+
     //eslint-disable-next-line
   }, []);
 
@@ -81,31 +140,10 @@ export default function HomePage() {
     //eslint-disable-next-line
   }, []);
 
-
-
-  useEffect(() => {
-     if(checked.length||value.length)filterProduct();
-  }, [checked,value]);
-
-  //get filterd product 
-  const filterProduct = async()=>{
-    try {
-      const { data } = await axios.post(
-        `http://localhost:8080/api/v1/product/product-filters`,
-        { checked, value }
-      );
-      setProduct(data?.products);
-
-    } catch (error) {
-      console.log(error);
-    }
-    
-  }
-
   return (
-    <Layout title={"home"}>
+    <Layout className="relative" title={"home"}>
       <div className="w-full min-h-full ">
-        <div className="absolute bottom-0 left-0 flex z-10 w-full gap-[1px]">
+        <div className="fixed  bottom-0 left-0 flex z-50 w-full gap-[1px]">
           <button className="bg-white w-1/2 p-6 text-xl shadow">Sort</button>
 
           <div className="bg-white w-1/2 text-xl text-center  shadow">
@@ -142,18 +180,38 @@ export default function HomePage() {
                       />
                     </Box>
                   </div>
-                  <button onClick={()=>window.location.reload()}>Reset Filter</button>
+                  <button onClick={() => window.location.reload()}>
+                    Reset Filter
+                  </button>
                 </div>
               )}
             </div>
-            <button className="p-6" onClick={() => setFilter(!filter)}>
-              {!filter ? "Filter" : "Apply"}
+            <button
+              className="p-6"
+              onClick={() => {
+                setFilter(!filter);
+                window.alert("filter applied");
+              }}
+            >
+              {!filter ? "Filters" : "Apply"}
             </button>
           </div>
         </div>
         <div className="w-full ">
           <h1 className="text-3xl px-4 pt-4 text-center m-2">All Products</h1>
-          <div className="m-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-10 ">
+
+          {/* <div className="m-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-10 "> */}
+          <InfiniteScroll
+            className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-10 "
+            dataLength={product.length}
+            next={getAllProducts}
+            hasMore={isScroll}
+            loader={
+              <div className="text-center">
+                <CircularProgress disableShrink />
+              </div>
+            }
+          >
             {product.map((element) => {
               return (
                 <Link
@@ -165,7 +223,8 @@ export default function HomePage() {
                       <img
                         src={`${element.photo}`}
                         className="max-h-full rounded-2xl text-center"
-                        alt=""
+                        alt={element.slug}
+                        loading="lazy"
                       />
                     </div>
                     <h3 className="text-3xl lg:text-2xl font-semibold lg:font-normal mb-2">
@@ -183,9 +242,91 @@ export default function HomePage() {
                 </Link>
               );
             })}
-          </div>
+          </InfiniteScroll>
+
+          {/* {spinner && (
+              <div className="w-full flex justify-center">
+                <CircularProgress disableShrink />
+              </div>
+            )} */}
+          {/* </div> */}
         </div>
       </div>
     </Layout>
   );
 }
+
+// import React, { useRef, useEffect } from 'react';
+
+// function ScrollableDivComponent({ onScrollToEnd }) {
+//   const scrollableDivRef = useRef();
+
+//   useEffect(() => {
+//     const handleScroll = () => {
+//       const scrollableDiv = scrollableDivRef.current;
+
+//       // Check if the user has scrolled to the bottom of the scrollable div
+//       if (
+//         scrollableDiv.scrollHeight - scrollableDiv.scrollTop ===
+//         scrollableDiv.clientHeight
+//       ) {
+//         // Call the provided callback function when reaching the end
+//         if (onScrollToEnd) {
+//           onScrollToEnd();
+//         }
+//       }
+//     };
+
+//     // Attach the event listener to the scrollable div
+//     const scrollableDiv = scrollableDivRef.current;
+//     if (scrollableDiv) {
+//       scrollableDiv.addEventListener('scroll', handleScroll);
+//     }
+
+//     // Detach the event listener on component unmount
+//     return () => {
+//       if (scrollableDiv) {
+//         scrollableDiv.removeEventListener('scroll', handleScroll);
+//       }
+//     };
+//   }, [onScrollToEnd]);
+
+//   return (
+//     <div
+//       ref={scrollableDivRef}
+//       style={{
+//         overflowY: 'scroll',
+//         height: '300px', // Set the desired height for the scrollable div
+//         border: '1px solid #ccc',
+//       }}
+//     >
+//       {/* Content of the scrollable div */}
+//       {/* ... */}
+//     </div>
+//   );
+// }
+
+/// page loding
+
+// const handelInfiniteScroll = async () => {
+//   // console.log("scrollHeight" + document.documentElement.scrollHeight);
+//   // console.log("innerHeight" + window.innerHeight);
+//   // console.log("scrollTop" + document.documentElement.scrollTop);
+//   try {
+//     window.alert('scrolled at end'+page)
+//     if (
+//       window.innerHeight + document.documentElement.scrollTop + 1 >=
+//       document.documentElement.scrollHeight
+//     ) {
+//       // setLoading(true);
+//       setPage((prev) => prev + 1);
+//     }
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
+// useEffect(() => {
+//   window.addEventListener("scroll", handelInfiniteScroll);
+//   return () => window.removeEventListener("scroll", handelInfiniteScroll);
+// }, []);
