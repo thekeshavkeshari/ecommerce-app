@@ -1,6 +1,7 @@
 import slugify from "slugify";
 import crypto from "crypto";
 import productModel from "../models/productModel.js";
+import categoryModel from "../models/categoryModel.js";
 import sharp from "sharp";
 import {
   S3Client,
@@ -361,11 +362,15 @@ function getContentTypeFromImageFormat(format) {
 export const productFiltersController = async (req, res) => {
   try {
     const { checked, value, page } = req.body;
+    console.log("Checked : ", checked);
+    console.log("Page :", page);
+    console.log("Value = ", value);
     let args = {};
-    if (checked?.length > 0) args.category = checked;
-    if (value?.length) args.price = { $gte: value[0], $lte: value[1] };
+    if (checked.length > 0) args.category = checked;
+    args.price = { $gte: value[0], $lte: value[1] };
+    const products = await productModel.find(args).limit(6 * parseInt(page));
 
-    const products = await productModel.find(args).limit(6* parseInt(page));
+    console.log(products);
 
     for (let product of products) {
       // For each post, generate a signed URL and save it to the post object
@@ -411,11 +416,15 @@ export const productCountController = async (req, res) => {
   }
 };
 
-export const productListController = async (req,res) => {
+export const productListController = async (req, res) => {
   try {
     const perPage = 6;
     const page = req.params.page ? req.params.page : 1;
-    const products = await productModel.find({}).skip((+page - 1) * (+perPage)).limit(perPage).sort({createdAt:-1});
+    const products = await productModel
+      .find({})
+      .skip((+page - 1) * +perPage)
+      .limit(perPage)
+      .sort({ createdAt: -1 });
     for (let product of products) {
       // For each post, generate a signed URL and save it to the post object
       product.photo = await getSignedUrl(
@@ -436,6 +445,112 @@ export const productListController = async (req,res) => {
     res.status(400).send({
       success: false,
       message: "Error in Page Controller",
+      error,
+    });
+  }
+};
+
+export const searchProductController = async (req, res) => {
+  try {
+    const { keyword } = req.params;
+    const products = await productModel.find({
+      $or: [
+        { name: { $regex: new RegExp(keyword, "i") } },
+        { description: { $regex: new RegExp(keyword, "i") } },
+      ],
+    });
+    for (let product of products) {
+      // For each post, generate a signed URL and save it to the post object
+      product.photo = await getSignedUrl(
+        s3Client,
+        new GetObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: product.photo,
+        }),
+        { expiresIn: 60 * 60 * 60 } // 60 seconds
+      );
+    }
+    res.status(200).send({
+      success: true,
+      product: products,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in Search Controller",
+      error,
+    });
+  }
+};
+
+export const relatedProductController = async (req, res) => {
+  try {
+    const { pid, cid } = req.params;
+    console.log(pid);
+    console.log(cid);
+
+    const products = await productModel
+      .find({
+        category: cid,
+        _id: { $ne: pid },
+      })
+      .limit(4)
+      .populate("category");
+    for (let product of products) {
+      // For each post, generate a signed URL and save it to the post object
+      product.photo = await getSignedUrl(
+        s3Client,
+        new GetObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: product.photo,
+        }),
+        { expiresIn: 60 * 60 * 60 } // 60 seconds
+      );
+    }
+    res.status(200).send({
+      success: true,
+      product: products,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in Related Product Controller",
+      error,
+    });
+  }
+};
+
+export const productCategoryController = async (req, res) => {
+  try {
+
+    const {slug} = req.params;
+    const category = await categoryModel.findOne({slug});
+    
+    const products = await productModel.find({category}).populate('category');
+    for (let product of products) {
+      // For each post, generate a signed URL and save it to the post object
+      product.photo = await getSignedUrl(
+        s3Client,
+        new GetObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: product.photo,
+        }),
+        { expiresIn: 60 * 60 * 60 } // 60 seconds
+      );
+    }
+    res.status(200).send({
+      success: true,
+      product: products,
+    });
+
+
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in Category Product Controller",
       error,
     });
   }

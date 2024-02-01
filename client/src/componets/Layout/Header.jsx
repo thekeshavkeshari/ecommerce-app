@@ -1,17 +1,35 @@
 import React, { useState } from "react";
 import { FiMenu } from "react-icons/fi";
 import { RxCross2 } from "react-icons/rx";
-import { NavLink, Navigate } from "react-router-dom";
+import { Link, NavLink, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/auth.jsx";
-// import toast from 'react-hot-toast';
 import { enqueueSnackbar } from "notistack";
+import useCategory from "../../hooks/useCategory.jsx";
 
 export default function Header(props) {
   const [auth, setAuth] = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const categories = useCategory();
+
+  const [isExpanded, setExpanded] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
 
-  const options = ["Option 1", "Option 2", "Option 3"];
+  const handleToggle = () => {
+    setExpanded(!isExpanded);
+  };
+
+  const handleOptionClick = (option) => {
+    setSelectedOption(option);
+    setExpanded(false);
+  };
+
+  const handleMouseEnter = () => {
+    setExpanded(true);
+  };
+
+  const handleMouseLeave = () => {
+    setExpanded(false);
+  };
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -49,13 +67,39 @@ export default function Header(props) {
             <NavLink to="/">Home</NavLink>
           </li>
           <li
-            className={`mr-6 hover:border-b-2 border-${
+            className={`mr-6  border-${
               props.title === "category" ? "2" : "0"
             } bg-${props.title === "category" ? "black" : "transparent"} text-${
               props.title === "category" ? "white" : "black"
             }  border-black`}
           >
-            <NavLink to="/category">Category</NavLink>
+            <div
+              className="relative inline-block"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <NavLink
+                to={`/categories`}
+                className="rounded cursor-pointer"
+                onClick={handleToggle}
+              >
+                Categories
+              </NavLink>
+              {isExpanded && (
+                <div className="absolute bg-white z-auto border shadow-md  py-2 rounded-md">
+                  {categories.map((item, index) => {
+                    return (
+                      <NavLink key={index}
+                        to={`/category/${item.slug}`}
+                        className="block px-4 z-auto text-left py-2 cursor-pointer hover:bg-gray-200"
+                      >
+                        {item.name}
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </li>
           {auth.user == null ? (
             <>
@@ -97,7 +141,7 @@ export default function Header(props) {
                   <span>User</span>
                 </button>
                 {isOpen && (
-                  <ul className="absolute text-left top-12 left-[-20px] right-[-27px] z-10 border-2 rounded border-black bg-slate-200">
+                  <ul className="absolute text-left top-12 left-[-20px] right-[-27px] z-50 border-2 rounded border-black bg-slate-200">
                     <li className="border-b-2  border-black">
                       <NavLink onClick={handleLogout}>Logout</NavLink>
                     </li>
@@ -139,7 +183,33 @@ export default function Header(props) {
                 <NavLink to="/">Home</NavLink>
               </li>
               <li className="p-2">
-                <NavLink to="/category">Category</NavLink>
+                <div
+                  className="relative inline-block"
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <NavLink
+                    to={"/categories"}
+                    className="rounded cursor-pointer"
+                    onClick={handleToggle}
+                  >
+                    Category
+                  </NavLink>
+                  {isExpanded && (
+                    <div className="absolute bg-white z-auto border shadow-md  min-h-48 overflow-y-scroll py-2 rounded-md">
+                      {categories.map((item, index) => {
+                        return (
+                          <NavLink key={index}
+                            to={`/category/${item.slug}`}
+                            className="block text-black px-4  text-left py-2 cursor-pointer hover:bg-gray-200"
+                          >
+                            {item.name}
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </li>
               {auth.user == null ? (
                 <>
@@ -169,7 +239,7 @@ export default function Header(props) {
                 </>
               )}
               <li className="p-2">
-                <NavLink to="/cart">CART (0)</NavLink>
+                <NavLink to="/cart">Cart (0)</NavLink>
               </li>
             </ul>
           </div>

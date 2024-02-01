@@ -10,6 +10,9 @@ import {
   productFiltersController,
   productCountController,
   productListController,
+  searchProductController,
+  relatedProductController,
+  productCategoryController,
 } from "../controllers/productController.js";
 import multer from "multer";
 
@@ -61,7 +64,16 @@ router.get('/product-count',productCountController);
 
 
 //product list 
-router.get('/product-list/:page',productListController)
+router.get('/product-list/:page',productListController);
+
+//search
+router.get('/search/:keyword',searchProductController);
+
+//related product
+router.get('/related-product/:pid/:cid',relatedProductController);
+
+//Get Product By Category 
+router.get('/product-category/:slug',productCategoryController);
 
 export default router;
 
