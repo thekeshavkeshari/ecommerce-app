@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { FiMenu } from "react-icons/fi";
 import { RxCross2 } from "react-icons/rx";
-import { Link, NavLink, Navigate } from "react-router-dom";
+import { NavLink, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/auth.jsx";
 import { enqueueSnackbar } from "notistack";
 import useCategory from "../../hooks/useCategory.jsx";
+import { useCart } from "../../context/cart.jsx";
 
 export default function Header(props) {
   const [auth, setAuth] = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const categories = useCategory();
+  const [cart] = useCart();
 
   const [isExpanded, setExpanded] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -51,7 +53,7 @@ export default function Header(props) {
   //  console.log(typeof props.title);
 
   return (
-    <div className="flex font-poppins justify-between py-4 px-2 shadow backdrop-blur">
+    <div className="flex font-poppins  justify-between py-4 px-2 shadow backdrop-blur">
       <div className="text-3xl ">
         <NavLink to="/">🛒</NavLink>
       </div>
@@ -86,10 +88,11 @@ export default function Header(props) {
                 Categories
               </NavLink>
               {isExpanded && (
-                <div className="absolute bg-white z-auto border shadow-md  py-2 rounded-md">
+                <div className="absolute bg-white z-auto max-h-24 overflow-y-scroll  border shadow-md  py-2 rounded-md">
                   {categories.map((item, index) => {
                     return (
-                      <NavLink key={index}
+                      <NavLink
+                        key={index}
                         to={`/category/${item.slug}`}
                         className="block px-4 z-auto text-left py-2 cursor-pointer hover:bg-gray-200"
                       >
@@ -166,7 +169,14 @@ export default function Header(props) {
               props.title === "cart" ? "white" : "black"
             }  border-black`}
           >
-            <NavLink to="/cart">Cart (0)</NavLink>
+            <NavLink to="/cart">
+              <div className="relative">
+                Cart{" "}
+                <div className="absolute z-10 w-6 top-[-5px] right-[-25px]  bg-black text-white rounded-full">
+                  {cart?.length}
+                </div>
+              </div>
+            </NavLink>
           </li>
         </ul>
         <div className="md:hidden text-3xl">
@@ -196,10 +206,11 @@ export default function Header(props) {
                     Category
                   </NavLink>
                   {isExpanded && (
-                    <div className="absolute bg-white z-auto border shadow-md  min-h-48 overflow-y-scroll py-2 rounded-md">
+                    <div className="absolute bg-white z-auto border shadow-md  max-h-24 overflow-y-scroll py-2 rounded-md">
                       {categories.map((item, index) => {
                         return (
-                          <NavLink key={index}
+                          <NavLink
+                            key={index}
                             to={`/category/${item.slug}`}
                             className="block text-black px-4  text-left py-2 cursor-pointer hover:bg-gray-200"
                           >
@@ -239,7 +250,7 @@ export default function Header(props) {
                 </>
               )}
               <li className="p-2">
-                <NavLink to="/cart">Cart (0)</NavLink>
+                <NavLink to="/cart">Cart {cart?.length}</NavLink>
               </li>
             </ul>
           </div>

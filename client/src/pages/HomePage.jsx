@@ -10,6 +10,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { enqueueSnackbar } from "notistack";
 import { IoCartOutline } from "react-icons/io5";
 import SearchInput from "../componets/Form/SearchInput.jsx";
+import { useCart } from "../context/cart.jsx";
 
 function valuetext(value) {
   return `${value}°C`;
@@ -28,6 +29,8 @@ export default function HomePage() {
   const [total, setTotal] = useState(1);
   const [page, setPage] = useState(1);
   const [isScroll, setScroll] = useState(true);
+
+  const [cart, setCart] = useCart();
 
   //Slider max rate
   const handleMaxprice = (products) => {
@@ -59,10 +62,9 @@ export default function HomePage() {
       setProduct((prev) => {
         const arr = [...prev, ...data.products];
         handleMaxprice(arr);
-        
+
         return arr;
       });
-
     } catch (error) {
       setSpinner(false);
       console.log(error);
@@ -138,9 +140,9 @@ export default function HomePage() {
     try {
       console.log(value);
       console.log(maxRange);
-      if ((value[0]==0 && value[1]==maxRange)&& checked.length==0){
-          return;
-      } 
+      if (value[0] == 0 && value[1] == maxRange && checked.length == 0) {
+        return;
+      }
       const { data } = await axios.post(
         `http://localhost:8080/api/v1/product/product-filters`,
         { checked, value, page }
@@ -148,7 +150,6 @@ export default function HomePage() {
       console.log(data?.products);
       setProduct(data?.products);
       enqueueSnackbar("Product has been filtered", { variant: "info" });
-
     } catch (error) {
       console.error();
     }
@@ -260,11 +261,8 @@ export default function HomePage() {
           >
             {product.map((element) => {
               return (
-                <Link
-                  key={element._id}
-                  to={`/product/${element.slug}`}
-                >
-                  <div className="sm:p-6 shadow-2xl rounded sm:rounded-2xl mb-2 h-full relative -z-10 sm:block">
+                <Link key={element._id} to={`/product/${element.slug}`}>
+                  <div className="sm:p-6 shadow-2xl rounded sm:rounded-2xl mb-2 h-full relative   sm:block">
                     <div className="rounded-2xl aspect-square flex justify-center shadow-md mb-4">
                       <img
                         src={`${element.photo}`}
@@ -281,7 +279,18 @@ export default function HomePage() {
                     </p>
                     <p className="font-bold pl-1 sm:pl-0"> ${element.price}</p>
 
-                    <button className="absolute bottom-2 right-2 border sm:static sm:w-full mt-2 sm:bg-black sm:text-white p-2 rounded-lg">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        localStorage.setItem(
+                          "cart",
+                          JSON.stringify([...cart, element])
+                        );
+                        setCart([...cart, element]);
+                        enqueueSnackbar("Product Added In Cart",{variant:"success"});
+                      }}
+                      className="absolute z-[25] bottom-2 right-2 border sm:static sm:w-full mt-2 sm:bg-black sm:text-white p-2 rounded-lg"
+                    >
                       <p className="hidden sm:block">Add to cart</p>
                       <p className="sm:hidden">
                         <IoCartOutline />
