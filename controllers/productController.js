@@ -9,9 +9,14 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
-
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { log } from "console";
+
+import Razorpay from "razorpay";
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 const bucketName = process.env.AWS_BUCKET_NAME;
 const region = process.env.AWS_BUCKET_REGION;
@@ -29,6 +34,18 @@ const s3Client = new S3Client({
 const generateFileName = (bytes = 32) =>
   crypto.randomBytes(bytes).toString("hex");
 
+function generateReceiptId() {
+  // Create a random string (you can customize the length as needed)
+  const randomString = crypto.randomBytes(16).toString("hex");
+
+  // Create a SHA-256 hash of the random string
+  const hash = crypto.createHash("sha256").update(randomString).digest("hex");
+  const truncatedHash = hash.substring(0, 40);
+
+  return truncatedHash;
+
+  // return hash;
+}
 // export const createProductController = async (req, res) => {
 //   try {
 //     // Checking all data
@@ -524,11 +541,10 @@ export const relatedProductController = async (req, res) => {
 
 export const productCategoryController = async (req, res) => {
   try {
+    const { slug } = req.params;
+    const category = await categoryModel.findOne({ slug });
 
-    const {slug} = req.params;
-    const category = await categoryModel.findOne({slug});
-    
-    const products = await productModel.find({category}).populate('category');
+    const products = await productModel.find({ category }).populate("category");
     for (let product of products) {
       // For each post, generate a signed URL and save it to the post object
       product.photo = await getSignedUrl(
@@ -544,14 +560,69 @@ export const productCategoryController = async (req, res) => {
       success: true,
       product: products,
     });
-
-
   } catch (error) {
     console.log(error);
     res.status(400).send({
       success: false,
       message: "Error in Category Product Controller",
       error,
+    });
+  }
+};
+
+// Razor payments
+export const razorOrderIdController = async (req, res) => {
+  try {
+    // setting up options for razorpay order.
+    const options = {
+      amount: req.body.amount,
+      currency: "INR",
+    };
+    const order = await razorpay.orders.create(options);
+    res.status(200).json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send("Not able to create order. Please try again!");
+  }
+};
+
+// Razor verification
+export const paymentVerificationController = async (req, res) => {
+  try {
+    
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+      req.body;
+  
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+  
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.VITE_RAZORPAY_KEY_SECRET)
+      .update(body.toString())
+      .digest("hex");
+  
+    const isAuthentic = expectedSignature === razorpay_signature;
+    
+  
+    if (isAuthentic) {
+      console.log(req.body);
+
+      res.redirect(
+        `http://localhost:5173/cart`
+      );
+    } else {
+      res.status(400).json({
+        success: false,
+        message:"Sign Does Not Match",
+      });
+    }
+
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error
     });
   }
 };

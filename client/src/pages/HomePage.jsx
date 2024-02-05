@@ -17,6 +17,8 @@ function valuetext(value) {
 }
 
 export default function HomePage() {
+  // console.log(process.env.BRAINTREE_MERCHANT_ID);
+
   const [product, setProduct] = useState([]);
   const [categories, setCategories] = useState([]);
   const [checked, setChecked] = useState([]);
@@ -101,26 +103,6 @@ export default function HomePage() {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
-  // //get filterd product
-  // const filterProduct = async () => {
-  //   try {
-  //     const { data } = await axios.post(
-  //       `http://localhost:8080/api/v1/product/product-filters`,
-  //       { checked, value, page }
-  //     );
-  //     setProduct(data?.products);
-
-  //     const maxPrice = data.products.reduce(
-  //       (max, obj) => (obj.price > max.price ? obj : max),
-  //       data.products[0]
-  //     ).price;
-  //     setMaxRange(maxPrice);
-  //     setValue([0, maxPrice]);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
 
   //Handle Sort
   const handleSort = () => {
@@ -287,7 +269,9 @@ export default function HomePage() {
                           JSON.stringify([...cart, element])
                         );
                         setCart([...cart, element]);
-                        enqueueSnackbar("Product Added In Cart",{variant:"success"});
+                        enqueueSnackbar("Product Added In Cart", {
+                          variant: "success",
+                        });
                       }}
                       className="absolute z-[25] bottom-2 right-2 border sm:static sm:w-full mt-2 sm:bg-black sm:text-white p-2 rounded-lg"
                     >

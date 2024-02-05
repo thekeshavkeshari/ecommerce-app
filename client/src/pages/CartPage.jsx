@@ -1,12 +1,17 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../componets/Layout/Layout";
 import { useAuth } from "../context/auth";
 import { useCart } from "../context/cart";
 import { RxCross2 } from "react-icons/rx";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import {enqueueSnackbar} from "notistack"
 // import
 const CartPage = () => {
   const [auth, setAuth] = useAuth();
   const [cart, setCart] = useCart();
+  const navigate = useNavigate();
+
 
   const removeCartItem = (pid) => {
     try {
@@ -33,6 +38,57 @@ const CartPage = () => {
     }
   };
 
+
+  const handlePayWithRazor = async () => {
+    try {
+
+      if (!auth.user) {
+        enqueueSnackbar("Login for checkout",{variant:"warning"});
+        return;
+      }
+
+      const { data:{order} } = await axios.post(
+        "http://localhost:8080/api/v1/product/order",
+        {
+          amount: totalPrice() * 100,
+          keyId: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          KeySecret: import.meta.env.VITE_RAZORPAY_KEY_SECRET,
+        }
+        );
+        
+        if (order) {
+        const options = {
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          amount: order.amount,
+          currency: "USD",
+          name: "Keshav Keshari",
+          description: "Ecommerce App Integration with RazorPay",
+          image: "https://avatars.githubusercontent.com/u/102542178?v=4",
+          order_id: order.id,
+          callback_url:
+            "http://localhost:8080/api/v1/product/paymentVerification",
+          prefill: {
+            name: auth.user.name,
+            email: auth.user.email,
+            contact: auth.user.phone,
+          },
+          notes: {
+            address: auth.user.address,
+          },
+          theme: {
+            color: "#121212",
+          },
+        };
+        const razor = new window.Razorpay(options);
+        razor.open();
+      }
+      
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
   return (
     <Layout title={"Cart"}>
       <div className="text-center m-2">{`Hello ${
@@ -45,41 +101,75 @@ const CartPage = () => {
             }`
           : "Your Cart is Empty"}
       </div>
-      <div className="m-4">
-        {cart.map((item, index) => {
-          return (
-            <div key={index} className="flex border relative p-2">
-              <img
-                src={item.photo}
-                className="w-20 aspect-square rounded"
-                alt={item.slug}
-              />
-              <div>
-                <h3 className="text-2xl px-2 ">{item.name}</h3>
-                <h4 className="text-xl p-2">Price : ${item.price}</h4>
-                <h4>{item?.category?.name}</h4>
-                <button
-                  onClick={() => {
-                    console.log("Remove Cart Button is Clicked");
-                    removeCartItem(item._id);
-                  }}
-                  className="rounded-full border p-1 text-white bg-red-500 absolute right-[5px] bottom-[7px]"
-                >
-                  <RxCross2 />
-                </button>
+
+      <div className="sm:flex">
+        <div className="m-4 flex-1">
+          {cart.map((item, index) => {
+            return (
+              <div key={index} className="flex border relative p-2">
+                <img
+                  src={item.photo}
+                  className="w-20 aspect-square rounded"
+                  alt={item.slug}
+                />
+                <div>
+                  <h3 className="text-2xl px-2 ">{item.name}</h3>
+                  <h4 className="text-xl p-2">Price : ${item.price}</h4>
+                  <h4>{item?.category?.name}</h4>
+                  <button
+                    onClick={() => {
+                      console.log("Remove Cart Button is Clicked");
+                      removeCartItem(item._id);
+                    }}
+                    className="rounded-full border p-1 text-white bg-red-500 absolute right-[5px] bottom-[7px]"
+                  >
+                    <RxCross2 />
+                  </button>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+        <div className="m-4 flex-1">
+          <h5 className="text-xl font-semibold">
+            {auth?.user ? `Your Address :` : "Please Login "}
+          </h5>
+          <h5>{auth?.user ? `${auth.user.address}` : ""}</h5>
+          {auth?.user ? (
+            <button
+              onClick={() => navigate("/dashboard/user/profile")}
+              className="p-2  border mt-2 bg-yellow-200 rounded"
+            >
+              Update Address
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate("/login", { state: "/cart" })}
+              className="p-2  border mt-2 bg-yellow-200 rounded"
+            >
+              Login
+            </button>
+          )}
+        </div>
       </div>
+
       <div className="w-full bg-white">
         <div className="flex fixed bottom-0 left-0 w-full p-4 border justify-around bg-white">
-          <div className="p-2 border rounded">Total Price : ${totalPrice()}</div>
-          <button className="p-2 px-10 border bg-yellow-400 rounded">Pay</button>
+          <div className="p-2 border rounded">
+            Total Price : ${totalPrice()}
+          </div>
+          <button
+            onClick={handlePayWithRazor}
+            className="p-2 px-10 border bg-yellow-400 rounded"
+          >
+            Pay
+          </button>
         </div>
+        
       </div>
     </Layout>
   );
 };
 
 export default CartPage;
+

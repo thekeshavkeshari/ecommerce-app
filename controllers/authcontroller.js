@@ -176,12 +176,12 @@ export const loginController = async (req, res) => {
       success: true,
       message: "Login successfully",
       user: {
-        _id:user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         phone: user.phone,
         address: user.address,
-        role:user.role
+        role: user.role,
       },
       token,
     });
@@ -198,4 +198,44 @@ export const loginController = async (req, res) => {
 //testcontroller
 export const testController = (req, res) => {
   res.send("protected route");
+};
+
+export const updateProfileController = async (req, res) => {
+  try {
+    const { name, password, address, phone } = req.body;
+    const user = await userModel.findById(req?.user?._id);
+    if (password?.length < 6) {
+      return res
+        .status(200)
+        .send({
+          success: false,
+          message: "Password is required and must 6 char long",
+        });
+    }
+
+    const hashedPassword = await hashPassword(password);
+
+    const updatedUser = await userModel.findByIdAndUpdate(
+      req.user._id,
+      {
+        name: name || user.name,
+        password: hashedPassword || user.password,
+        address: address || user.address,
+        phone: phone || user.phone,
+      },
+      { new: true }
+    );
+    res.status(200).send({
+      success: true,
+      message: "Profile Updated Successfully",
+      updatedUser,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in User Update",
+      error,
+    });
+  }
 };

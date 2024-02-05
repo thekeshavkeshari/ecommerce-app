@@ -13,9 +13,10 @@ import {
   searchProductController,
   relatedProductController,
   productCategoryController,
+  razorOrderIdController,
+  paymentVerificationController,
 } from "../controllers/productController.js";
 import multer from "multer";
-
 
 const router = express.Router();
 const storage = multer.memoryStorage();
@@ -25,7 +26,7 @@ router.post(
   "/create-product",
   requireSignIn,
   isAdmin,
-  upload.single('photo'),
+  upload.single("photo"),
   createProductController
 );
 
@@ -33,53 +34,37 @@ router.post(
   "/update-product/:pid",
   requireSignIn,
   isAdmin,
-  upload.single('photo'),
+  upload.single("photo"),
   updateProductController
 );
-router.get(
-  "/get-product",
-  getProductController
-);
-router.get(
-  "/get-product/:slug",
-  getSingleProductController
-);
-// for getting image 
-router.get(
-  "/get-product-photo/:id",
-  getSingleProductImageController
-);
+router.get("/get-product", getProductController);
+router.get("/get-product/:slug", getSingleProductController);
+// for getting image
+router.get("/get-product-photo/:id", getSingleProductImageController);
 
-
-router.delete(
-  "/product/:pid",
-  deleteProductController
-);
+router.delete("/product/:pid", deleteProductController);
 
 //filter product
-router.post('/product-filters',productFiltersController);
+router.post("/product-filters", productFiltersController);
 
-// product count 
-router.get('/product-count',productCountController);
+// product count
+router.get("/product-count", productCountController);
 
-
-//product list 
-router.get('/product-list/:page',productListController);
+//product list
+router.get("/product-list/:page", productListController);
 
 //search
-router.get('/search/:keyword',searchProductController);
+router.get("/search/:keyword", searchProductController);
 
 //related product
-router.get('/related-product/:pid/:cid',relatedProductController);
+router.get("/related-product/:pid/:cid", relatedProductController);
 
-//Get Product By Category 
-router.get('/product-category/:slug',productCategoryController);
+//Get Product By Category
+router.get("/product-category/:slug", productCategoryController);
+
+//Payment route for Razorpay
+router.post("/order", requireSignIn, razorOrderIdController);
+
+router.post("/paymentVerification", paymentVerificationController);
 
 export default router;
-
-
-
-
-
-
-

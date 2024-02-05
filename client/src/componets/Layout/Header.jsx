@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FiMenu } from "react-icons/fi";
 import { RxCross2 } from "react-icons/rx";
-import { NavLink, Navigate } from "react-router-dom";
+import { NavLink, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth.jsx";
 import { enqueueSnackbar } from "notistack";
 import useCategory from "../../hooks/useCategory.jsx";
@@ -12,6 +12,7 @@ export default function Header(props) {
   const [isOpen, setIsOpen] = useState(false);
   const categories = useCategory();
   const [cart] = useCart();
+  const navigate = useNavigate();
 
   const [isExpanded, setExpanded] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -45,7 +46,7 @@ export default function Header(props) {
     });
     localStorage.removeItem("auth");
     enqueueSnackbar("Logout Successfully", { variant: "success" });
-    Navigate("/login");
+    navigate("/login");
     // toast.success("Logout Successfully");
   }
 
