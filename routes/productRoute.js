@@ -65,6 +65,10 @@ router.get("/product-category/:slug", productCategoryController);
 //Payment route for Razorpay
 router.post("/order", requireSignIn, razorOrderIdController);
 
-router.post("/paymentVerification", paymentVerificationController);
+router.post(
+  "/paymentVerification",
+  requireSignIn,
+  paymentVerificationController
+);
 
 export default router;

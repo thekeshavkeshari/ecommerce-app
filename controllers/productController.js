@@ -12,6 +12,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import Razorpay from "razorpay";
+import orderModel from "../models/orderModel.js";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -592,37 +593,46 @@ export const razorOrderIdController = async (req, res) => {
 // Razor verification
 export const paymentVerificationController = async (req, res) => {
   try {
-    
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, cart } =
       req.body;
-  
+
     const body = razorpay_order_id + "|" + razorpay_payment_id;
-  
+
     const expectedSignature = crypto
       .createHmac("sha256", process.env.VITE_RAZORPAY_KEY_SECRET)
       .update(body.toString())
       .digest("hex");
-  
-    const isAuthentic = expectedSignature === razorpay_signature;
-    
-  
-    if (isAuthentic) {
-      console.log(req.body);
 
-      res.redirect(
-        `http://localhost:5173/cart`
-      );
+    const isAuthentic = expectedSignature === razorpay_signature;
+
+    if (isAuthentic) {
+      // console.log(req);
+
+      const order = new orderModel({
+        products: cart,
+        buyer: req.user._id,
+        payment: {
+          razorpay_order_id,
+          razorpay_payment_id,
+          razorpay_signature,
+        },
+      }).save();
+
+      res.status(200).send({
+        success: true,
+        message: "Payment Is Authentic",
+      });
     } else {
-      res.status(400).json({
+      res.status(400).send({
         success: false,
-        message:"Sign Does Not Match",
+        message: "I Seems Like Your Payment Is Not Authentic",
       });
     }
-
   } catch (error) {
-    res.status(400).json({
+    console.log(error);
+    res.status(400).send({
       success: false,
-      error
+      message: error,
     });
   }
 };

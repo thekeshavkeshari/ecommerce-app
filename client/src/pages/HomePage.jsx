@@ -31,7 +31,6 @@ export default function HomePage() {
   const [total, setTotal] = useState(1);
   const [page, setPage] = useState(1);
   const [isScroll, setScroll] = useState(true);
-
   const [cart, setCart] = useCart();
 
   //Slider max rate

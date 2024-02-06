@@ -5,13 +5,35 @@ import { useCart } from "../context/cart";
 import { RxCross2 } from "react-icons/rx";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import {enqueueSnackbar} from "notistack"
+import { enqueueSnackbar } from "notistack";
 // import
 const CartPage = () => {
   const [auth, setAuth] = useAuth();
   const [cart, setCart] = useCart();
-  const navigate = useNavigate();
+  const [handerResponse, setHanderResponse] = useState({});
 
+  const updateCartSaveInfoInDB = async () => {
+    console.log(handerResponse);
+    try {
+      const { data } = await axios.post(
+        "http://localhost:8080/api/v1/product/paymentVerification",{...handerResponse,cart}
+      );
+      if (data?.success) {
+        enqueueSnackbar(data.message, { variant: "success" });
+        setCart([]);
+        localStorage.setItem('cart',"");
+      }
+    } catch (error) {
+      console.log(error);
+      enqueueSnackbar(error.message, { variant: "error" });
+    }
+  };
+
+  useEffect(() => {
+    if (handerResponse?.razorpay_signature) updateCartSaveInfoInDB();
+  }, [handerResponse]);
+
+  const navigate = useNavigate();
 
   const removeCartItem = (pid) => {
     try {
@@ -38,35 +60,33 @@ const CartPage = () => {
     }
   };
 
-
   const handlePayWithRazor = async () => {
     try {
-
       if (!auth.user) {
-        enqueueSnackbar("Login for checkout",{variant:"warning"});
+        enqueueSnackbar("Login for checkout", { variant: "warning" });
         return;
       }
+      if (cart.length<1) {
+        enqueueSnackbar("Add some Products ", { variant: "warning" });
+        return;
+      }
+      const {
+        data: { order },
+      } = await axios.post("http://localhost:8080/api/v1/product/order", {
+        amount: totalPrice() * 100,
+      });
 
-      const { data:{order} } = await axios.post(
-        "http://localhost:8080/api/v1/product/order",
-        {
-          amount: totalPrice() * 100,
-          keyId: import.meta.env.VITE_RAZORPAY_KEY_ID,
-          KeySecret: import.meta.env.VITE_RAZORPAY_KEY_SECRET,
-        }
-        );
-        
-        if (order) {
+      if (order) {
         const options = {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID,
           amount: order.amount,
-          currency: "USD",
           name: "Keshav Keshari",
           description: "Ecommerce App Integration with RazorPay",
           image: "https://avatars.githubusercontent.com/u/102542178?v=4",
           order_id: order.id,
-          callback_url:
-            "http://localhost:8080/api/v1/product/paymentVerification",
+          handler: async (response) => {
+            setHanderResponse({ ...response });
+          },
           prefill: {
             name: auth.user.name,
             email: auth.user.email,
@@ -76,18 +96,26 @@ const CartPage = () => {
             address: auth.user.address,
           },
           theme: {
-            color: "#121212",
+            color: "#111111",
           },
         };
         const razor = new window.Razorpay(options);
+        razor.on("payment.failed", function (response) {
+          // alert(response.error.code);
+          // alert(response.error.description);
+          // alert(response.error.source);
+          // alert(response.error.step);
+          // alert(response.error.reason);
+          // alert(response.error.metadata.order_id);
+          // alert(response.error.metadata.payment_id);
+          enqueueSnackbar(response.error, { variant: "error" });
+        });
         razor.open();
       }
-      
     } catch (error) {
       console.log(error);
     }
   };
-
 
   return (
     <Layout title={"Cart"}>
@@ -165,11 +193,9 @@ const CartPage = () => {
             Pay
           </button>
         </div>
-        
       </div>
     </Layout>
   );
 };
 
 export default CartPage;
-
