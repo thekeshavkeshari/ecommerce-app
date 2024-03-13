@@ -190,7 +190,7 @@ const CartPage = () => {
             onClick={handlePayWithRazor}
             className="p-2 px-10 border bg-yellow-400 rounded"
           >
-            Pay
+            Checkout
           </button>
         </div>
       </div>

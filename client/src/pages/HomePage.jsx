@@ -161,6 +161,30 @@ export default function HomePage() {
 
   return (
     <Layout className="relative" title={"home"}>
+      <div>
+        <div className="relative">
+          {/* <div className="p-6">
+            <img
+              className="rounded-lg"
+              src="https://res.cloudinary.com/dcwr0gis2/image/upload/v1708329133/jaykftu8sotojt22cent.jpg"
+              alt="Image"
+            />
+            <div className="absolute top-6 left-6   ">
+              <span className="text-2xl px-2 font-poppins rounded-br font-extrabold bg-white">
+                REDISCOVER THE
+              </span>
+              <br />
+              <span className="text-2xl px-2 font-poppins rounded-br font-extrabold bg-white">
+                IMAGINTION OF
+              </span>
+              <br />
+              <span className="text-2xl px-2 font-poppins rounded-br font-extrabold bg-white">
+                AI
+              </span>
+            </div>
+          </div> */}
+        </div>
+      </div>
       <div className="w-full min-h-full ">
         <SearchInput />
         <div className="fixed  bottom-0 left-0 flex z-50 w-full gap-[1px]">

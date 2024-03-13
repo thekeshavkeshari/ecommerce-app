@@ -1,5 +1,6 @@
 import { comparePassword, hashPassword } from "../helpers/authHelper.js";
 import userModel from "../models/userModel.js";
+import orderModel from "../models/orderModel.js";
 import JWT from "jsonwebtoken";
 
 // function checkNone(props,res) {
@@ -205,12 +206,10 @@ export const updateProfileController = async (req, res) => {
     const { name, password, address, phone } = req.body;
     const user = await userModel.findById(req?.user?._id);
     if (password?.length < 6) {
-      return res
-        .status(200)
-        .send({
-          success: false,
-          message: "Password is required and must 6 char long",
-        });
+      return res.status(200).send({
+        success: false,
+        message: "Password is required and must 6 char long",
+      });
     }
 
     const hashedPassword = await hashPassword(password);
@@ -239,3 +238,21 @@ export const updateProfileController = async (req, res) => {
     });
   }
 };
+
+export const getOrderController = async (req, res) => {try {
+  const orders = await orderModel.find({buyer:req?.user?._id}).populate("products");
+  
+  res.status(200).send({
+    success: false,
+    orders
+  });
+} catch (error) {
+  console.log(error);
+  res.status(500).send({
+    success: false,
+    message: "Error In getting Orders",
+    error,
+  });
+}};
+
+

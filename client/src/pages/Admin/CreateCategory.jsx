@@ -4,6 +4,7 @@ import { enqueueSnackbar } from "notistack";
 
 import axios from "axios";
 import CategoryForm from "../../componets/Form/CategoryForm.jsx";
+import CategoryGridElement from "./CategoryGridElement.jsx";
 
 const CreateCategory = () => {
   const [category, setCategory] = useState([]);
@@ -14,7 +15,8 @@ const CreateCategory = () => {
         "http://localhost:8080/api/v1/category/get-category"
       );
       if (data.success) {
-        setCategory(data.category);
+        setCategory(data?.category);
+        // console.log(data?.category);
       }
     } catch (error) {
       console.log(err);
@@ -28,9 +30,10 @@ const CreateCategory = () => {
   return (
     <AdminContent title={"Create Category"}>
       <div className="m-6">
+        <h2 className="text-center mb-5 text-2xl">Create New Category</h2>
         <CategoryForm getCategory={getCategory} />
 
-        <table className="w-full text-left mt-6">
+        {/* <table className="w-full text-left mt-6">
           <thead>
             <tr>
               <th>Category</th>
@@ -49,7 +52,20 @@ const CreateCategory = () => {
               );
             })}
           </tbody>
-        </table>
+        </table> */}
+
+        <div className="grid grid-cols-3 gap-6 mt-4 md:grid-cols-6 ">
+          {category.map((elm,index) => {
+            return (
+              <CategoryGridElement
+                key={index}
+                categoryName={elm.name}
+                categorySlug={elm.slug}
+                description={elm.description}
+              />
+            );
+          })}
+        </div>
       </div>
     </AdminContent>
   );
@@ -105,15 +121,10 @@ const TableContent = ({ name, categoryid, getCategory }) => {
   };
   return (
     <>
-      
       <tr className="my-2">
         <td>{name}</td>
         <td>
-          <button
-            onClick={()=>setShow(!show)}
-          >
-            Edit
-          </button>
+          <button onClick={() => setShow(!show)}>Edit</button>
         </td>
         <td>
           <button
@@ -125,7 +136,7 @@ const TableContent = ({ name, categoryid, getCategory }) => {
           </button>
         </td>
       </tr>
-      
+
       {show && (
         <tr className="my-2">
           <td>
@@ -152,7 +163,6 @@ const TableContent = ({ name, categoryid, getCategory }) => {
           </td>
         </tr>
       )}
-      
     </>
   );
 };
