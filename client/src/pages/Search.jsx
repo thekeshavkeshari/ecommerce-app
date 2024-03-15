@@ -20,14 +20,11 @@ const Search = () => {
         <div className="p-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 sm:gap-10 gap-1">
           {values.results.map((element) => {
             return (
-              <Link
-                key={element._id}
-                to={`/product/${element.slug}`}
-              >
+              <Link key={element._id} to={`/product/${element.slug}`}>
                 <div className="sm:p-6 shadow-2xl rounded sm:rounded-2xl mb-2 h-full relative sm:block">
                   <div className="rounded-2xl aspect-square flex justify-center shadow-md mb-4">
                     <img
-                      src={`${element.photo}`}
+                      src={`http://res.cloudinary.com/dcwr0gis2/image/upload/ecommerce-app/product-image/${element?.slug}.jpg`}
                       className="max-h-full rounded-2xl text-center"
                       alt={element.slug}
                       loading="lazy"

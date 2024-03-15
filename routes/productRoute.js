@@ -6,7 +6,6 @@ import {
   getSingleProductController,
   deleteProductController,
   updateProductController,
-  getSingleProductImageController,
   productFiltersController,
   productCountController,
   productListController,
@@ -16,31 +15,31 @@ import {
   razorOrderIdController,
   paymentVerificationController,
 } from "../controllers/productController.js";
-import multer from "multer";
+import Multer from "multer";
 
+const storage = new Multer.memoryStorage();
+const upload = Multer({
+  storage,
+});
 const router = express.Router();
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
 
 router.post(
   "/create-product",
   requireSignIn,
   isAdmin,
-  upload.single("photo"),
+  upload.single("my_file"),
   createProductController
 );
 
-router.post(
-  "/update-product/:pid",
+router.put(
+  "/update-product/:slug",
   requireSignIn,
   isAdmin,
-  upload.single("photo"),
+  upload.single("my_file"),
   updateProductController
 );
 router.get("/get-product", getProductController);
 router.get("/get-product/:slug", getSingleProductController);
-// for getting image
-router.get("/get-product-photo/:id", getSingleProductImageController);
 
 router.delete("/product/:pid", deleteProductController);
 

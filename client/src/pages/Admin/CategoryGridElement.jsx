@@ -1,15 +1,7 @@
 import React from "react";
 
-// const CategoryGridElement = () => {
-//   return (
-//     <div>CategoryGridElement</div>
-//   )
-// }
-
 const CategoryGridElement = ({ categoryName, categorySlug, description }) => {
-  //  console.log("Name in element ",categoryName);
-  // console.log(categorySlug);
-  // console.log(description);
+  
   return (
     <div>
       <div className="aspect-[2/3]">

@@ -27,9 +27,10 @@ router.post(
   createCategoryController
 );
 router.put(
-  "/update-category/:id",
+  "/update-category/:slug",
   requireSignIn,
   isAdmin,
+  upload.single("my_file"),
   updateCategoryController
 );
 router.get("/get-category", categoryController);

@@ -3,8 +3,6 @@ import AdminContent from "./AdminContent.jsx";
 import Dropdown from "../../componets/Dropdown.jsx";
 import axios from "axios";
 import { enqueueSnackbar } from "notistack";
-import Select from "react-select";
-
 import { useNavigate, useParams } from "react-router-dom";
 // import Select from "react-select/dist/declarations/src/Select.js";
 // const { Option } = Select;
@@ -20,7 +18,9 @@ const UpdateProduct = () => {
     category: "",
     quantity: "",
     photo: "",
+    slug: "",
     shipping: false,
+    _id: "",
   });
 
   //get single product
@@ -30,22 +30,31 @@ const UpdateProduct = () => {
         `http://localhost:8080/api/v1/product/get-product/${params.slug}`
       );
       console.log(data.product);
-      setProduct(data.product);
-
-      const response = await axios.get(
-        `http://localhost:8080/api/v1/product/get-product-photo/${data.product._id}`,
-        { responseType: "arraybuffer" }
-      );
-      const pic = new File([new Blob([response.data])], params.slug, {
-        type: "image/jpeg",
-        lastModified: Date.now(),
+      setProduct({
+        name: data?.product.name || "",
+        description: data?.product.description || "",
+        price: data?.product.price || "",
+        category: data?.product?.category._id || "",
+        quantity: data?.product.quantity || "",
+        slug: data?.product.slug || "",
+        shipping: data?.product.shipping || "",
+        _id: data?.product._id || "",
       });
-      console.log(pic);
 
-      setProduct((prev) => ({
-        ...prev,
-        photo: pic,
-      }));
+      // const response = await axios.get(
+      //   `http://localhost:8080/api/v1/product/get-product-photo/${data.product._id}`,
+      //   { responseType: "arraybuffer" }
+      // );
+      // const pic = new File([new Blob([response.data])], params.slug, {
+      //   type: "image/jpeg",
+      //   lastModified: Date.now(),
+      // });
+      // console.log(pic);
+
+      // setProduct((prev) => ({
+      //   ...prev,
+      //   photo: pic,
+      // }));
     } catch (error) {
       console.log("Error in getting Single Product");
     }
@@ -109,14 +118,18 @@ const UpdateProduct = () => {
     e.preventDefault();
     // console.log(product);
     try {
-      const { data } = await axios.post(
+      const form = new FormData();
+      form.append("my_file", product.photo);
+      form.append("name", product.name);
+      form.append("category",product.category);
+      // console.log(product.category);
+      form.append("description", product.description);
+      form.append("price", product.price);
+      form.append("shipping", product.shipping);
+      form.append("quantity", product.quantity);
+      const { data } = await axios.put(
         `http://localhost:8080/api/v1/product/update-product/${product._id}`,
-        product,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data", // Important for file uploads
-          },
-        }
+        form
       );
       if (data?.success) {
         enqueueSnackbar(data.message, { variant: "success" });
@@ -133,19 +146,30 @@ const UpdateProduct = () => {
       <div className="m-6">
         <h2 className="mb-4 text-2xl text-bold">Update Product</h2>
         <form onSubmit={sendToCreate} className="w-full">
-          {categories.length > 0 ? (
+          {/* {categories.length > 0 ? (
             <Dropdown
               categories={categories}
               setProduct={setProduct}
               selectedToUpdate={product.category}
+            
             />
           ) : (
             // <Select options={arrayOfCategories} />
             <div>Loading categories...</div>
-          )}
+          )} */}
+          <select
+            className="w-full h-10 rounded border-black border-2"
+            value={product.category}
+            onChange={handeler}
+            name="category"
+          >
+            {categories.map((elm, index) => {
+              return <option value={elm._id}>{elm.name}</option>;
+            })}
+          </select>
 
           <div className="mt-4 w-full">
-            <label className="rounded block  bg-black text-white p-2 w-full">
+            <label className="rounded block  bg-[#4D4D4D] text-white p-2 w-full">
               {product.photo
                 ? product.photo.name || "Select an image"
                 : "Upload an image"}
@@ -155,32 +179,32 @@ const UpdateProduct = () => {
                 onChange={handleSet}
                 accept="image/*"
                 className="mt-2 w-full"
-              
                 hidden
               />
             </label>
           </div>
 
           <div className="mt-2 flex justify-center">
+            {product.slug && !product.photo && (
+              <img
+                src={`http://res.cloudinary.com/dcwr0gis2/image/upload/ecommerce-app/product-image/${product?.slug}.jpg`}
+                alt="image"
+                className="rounded h-[300px] w-full sm:w-[600px] object-cover"
+              />
+            )}
             {product.photo && (
-              <div>
-                <img
-                  src={
-                    typeof product.photo === "string"
-                      ? product.photo
-                      : URL.createObjectURL(product.photo)
-                  }
-                  alt="image"
-                  className="rounded w-[200px]"
-                />
-              </div>
+              <img
+                src={URL.createObjectURL(product.photo)}
+                alt="image"
+                className="rounded h-[300px] w-full sm:w-[600px] object-cover"
+              />
             )}
           </div>
           <div className="mt-2 flex flex-col gap-1">
             <label>Name of Product </label>
             <input
               type="text"
-              required
+              // required
               onChange={handeler}
               name="name"
               value={product.name}
@@ -189,7 +213,7 @@ const UpdateProduct = () => {
             <label>Description </label>
             <textarea
               type="text"
-              required
+              // required
               onChange={handeler}
               name="description"
               value={product.description}
@@ -198,7 +222,7 @@ const UpdateProduct = () => {
             <label>Set Price </label>
             <input
               type="number"
-              required
+              // required
               onChange={handeler}
               name="price"
               value={product.price}
@@ -207,7 +231,7 @@ const UpdateProduct = () => {
             <label>Quantity </label>
             <input
               type="number"
-              required
+              // required
               onChange={handeler}
               name="quantity"
               value={product.quantity}
@@ -227,7 +251,7 @@ const UpdateProduct = () => {
 
             <div className="w-full h-10 f">
               <button
-                className=" bg-black text-white rounded w-full p-2"
+                className=" bg-[#4D4D4D] text-white rounded w-full p-2"
                 type="submit"
               >
                 Update
@@ -236,7 +260,7 @@ const UpdateProduct = () => {
           </div>
         </form>
         <button
-          className=" bg-black mt-4 text-white rounded w-full p-2"
+          className=" bg-[#4D4D4D] mt-4 text-white rounded w-full p-2"
           onClick={deleteProduct}
         >
           Delete

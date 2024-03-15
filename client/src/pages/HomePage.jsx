@@ -17,7 +17,6 @@ function valuetext(value) {
 }
 
 export default function HomePage() {
-  // console.log(process.env.BRAINTREE_MERCHANT_ID);
 
   const [product, setProduct] = useState([]);
   const [categories, setCategories] = useState([]);

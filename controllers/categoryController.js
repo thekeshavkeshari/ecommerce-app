@@ -16,6 +16,28 @@ async function handleUpload(dataURI, opt) {
   return uploadResponse.url;
 }
 
+async function handleDelete(slug) {
+  const deleteResponce = await cloudinary.v2.api.delete_resources(
+    [`ecommerce-app/category-image/${slug}`],
+    {
+      type: "upload",
+      resource_type: "image",
+    }
+  );
+  return deleteResponce;
+}
+
+async function handleRename(slug1, slug2) {
+  const deleteResponce = await cloudinary.v2.uploader.rename(
+    `ecommerce-app/category-image/${slug1}`,
+    `ecommerce-app/category-image/${slug2}`,
+    {
+      type: "upload",
+      resource_type: "image",
+    }
+  );
+  return deleteResponce;
+}
 export const createCategoryController = async (req, res) => {
   try {
     const { name, categoryTitle, categoryDescription } = req.body;
@@ -66,10 +88,9 @@ export const createCategoryController = async (req, res) => {
       const cldRes = await handleUpload(dataURI, slugify(name));
       console.log(cldRes);
     } catch (error) {
-      await categoryModel.deleteOne({slug:slugify(name)});
+      await categoryModel.deleteOne({ slug: slugify(name) });
       throw error;
     }
-    
 
     return res.status(201).send({
       success: true,
@@ -88,24 +109,72 @@ export const createCategoryController = async (req, res) => {
 
 export const updateCategoryController = async (req, res) => {
   try {
-    const { name } = req.body;
-    const { id } = req.params;
-    const category = await categoryModel.findByIdAndUpdate(
-      id,
-      { name, slug: slugify(name) },
-      { new: true }
+    const { name, categoryTitle, categoryDescription } = req.body;
+    const slug = req.params.slug;
+    console.log(slug);
+
+    const update = {};
+
+    if (name) {
+      update.name = name;
+      update.slug = slugify(name);
+    }
+    if (categoryTitle) {
+      update.categoryTitle = categoryTitle;
+    }
+    if (categoryDescription) {
+      update.categoryDescription = categoryDescription;
+    }
+
+    const updateCategory = await categoryModel.findOneAndUpdate(
+      { slug },
+      update
     );
-    res.status(200).send({
+
+    // if (req.file || slug != update.slug) {
+    //   const b64 = Buffer.from(req.file.buffer).toString("base64");
+    //   let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+    //   console.log(slugify(name));
+    //   try {
+    //     const cldRes = await handleUpload(dataURI, slugify(name));
+    //     console.log(cldRes);
+    //   } catch (error) {
+    //     // await categoryModel.deleteOne({ slug: slugify(name) });
+    //     throw error;
+    //   }
+    // }
+
+    if (req.file) {
+      const b64 = Buffer.from(req.file.buffer).toString("base64");
+      let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+      console.log(slugify(name));
+      try {
+        const cldRes = await handleUpload(dataURI, slugify(name));
+        await productModel.deleteOne({ slug });
+        console.log(cldRes);
+      } catch (error) {
+        throw error;
+      }
+    } else if (update.slug && slug != update.slug) {
+      try {
+        const cldRes = await handleRename(slug, update.slug);
+        console.log(cldRes);
+      } catch (error) {
+        throw error;
+      }
+    }
+
+    return res.status(201).send({
       success: true,
-      message: "Category Updated Successfully",
-      category,
+      message: "Category Updated",
+      updateCategory,
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
       error,
-      message: "Error while updating category",
+      message: "Error in Catogory",
     });
   }
 };
@@ -150,7 +219,15 @@ export const singleCategoryController = async (req, res) => {
 };
 export const deleteCategoryController = async (req, res) => {
   try {
-    const category = await categoryModel.deleteOne({ _id: req.params.id });
+    const category = await categoryModel.findByIdAndDelete({
+      _id: req.params.id,
+    });
+    try {
+      const dlres = await handleDelete(category.slug);
+      console.log(dlres);
+    } catch (error) {
+      throw error;
+    }
     res.status(200).send({
       success: true,
       category,

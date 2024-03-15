@@ -1,4 +1,5 @@
 import HomePage from "./pages/HomePage.jsx";
+import LandingPage from "./pages/LandingPage.jsx";
 import About from "./pages/About.jsx";
 import Contact from "./pages/Contact.jsx";
 import Policy from "./pages/Policy.jsx";
@@ -12,6 +13,7 @@ import PrivateRoute from "./componets/Routes/Private.jsx";
 import AdminRoute from "./componets/Routes/AdminRoute.jsx";
 import AdminDashboard from "./pages/Admin/AdminDashboard.jsx";
 import CreateCategory from "./pages/Admin/CreateCategory.jsx";
+import UpdateCategory from "./pages/Admin/UpdateCategory.jsx";
 import CreateProduct from "./pages/Admin/CreateProduct.jsx";
 import Users from "./pages/Admin/Users.jsx";
 import Orders from "./pages/User/Orders.jsx";
@@ -27,7 +29,8 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/search" element={<Search />} />
         <Route path="/product/:slug" element={<ProductDetails />} />
         <Route path="/categories" element={<Categories />} />
@@ -44,6 +47,10 @@ function App() {
         <Route path="/dashboard" element={<AdminRoute />}>
           <Route path="admin" element={<AdminDashboard />} />
           <Route path="admin/create-category" element={<CreateCategory />} />
+          <Route
+            path="admin/update-category/:slug"
+            element={<UpdateCategory />}
+          />
           <Route path="admin/create-product" element={<CreateProduct />} />
           <Route path="admin/product/:slug" element={<UpdateProduct />} />
           <Route path="admin/products" element={<Products />} />
@@ -56,6 +63,6 @@ function App() {
         <Route path="/*" element={<Pagenotfound />} />
       </Routes>
     </>
-  )
+  );
 }
 export default App

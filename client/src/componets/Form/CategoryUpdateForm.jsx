@@ -1,14 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { enqueueSnackbar } from "notistack";
 import axios from "axios";
 
-const CategoryForm = ({ getCategory }) => {
+const CategoryUpdateForm = ({ slug }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [categoryData, setCategoryData] = useState({
     categoryName: "",
     categoryTitle: "",
     categoryDescription: "",
+    slug: "",
   });
+
+  const getCategory = async () => {
+    try {
+      const { data } = await axios.get(
+        `http://localhost:8080/api/v1/category/single-category/${slug}`
+      );
+      if (data.success && data.category) {
+        setCategoryData({
+          categoryName: data.category.name || "",
+          categoryTitle: data.category.title || "",
+          categoryDescription: data.category.description || "",
+          slug: data.category.slug || "",
+        });
+        console.log(data);
+      }
+    } catch (error) {
+      console.log(err);
+    }
+  };
+  useEffect(() => {
+    getCategory();
+  }, []);
   const handleImageChange = (event) => {
     const imageFile = event.target.files[0];
     setSelectedImage(imageFile);
@@ -16,6 +39,7 @@ const CategoryForm = ({ getCategory }) => {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    console.log("Submitted");
     try {
       const cat_data = new FormData();
       cat_data.append("my_file", selectedImage);
@@ -23,12 +47,13 @@ const CategoryForm = ({ getCategory }) => {
       cat_data.append("name", categoryData.categoryName);
       cat_data.append("categoryTitle", categoryData.categoryTitle);
 
-      const { data } = await axios.post(
-        "http://localhost:8080/api/v1/category/create-category",
+      const { data } = await axios.put(
+        `http://localhost:8080/api/v1/category/update-category/${slug}`,
+
         cat_data
       );
       if (data.success) {
-        enqueueSnackbar("Category Added successfully", { variant: "success" });
+        enqueueSnackbar("Category Updated successfully", { variant: "success" });
         getCategory();
       }
     } catch (error) {
@@ -81,13 +106,20 @@ const CategoryForm = ({ getCategory }) => {
             }));
           }}
         />
-        {selectedImage && (
+        {(selectedImage || categoryData?.slug) && (
           <div className="flex-1 md:hidden  flex items-center  ">
             <div className="py-2 h-[300px] w-full">
               {selectedImage && (
                 <img
                   className="rounded h-full w-full object-cover"
                   src={URL.createObjectURL(selectedImage)}
+                  alt=""
+                />
+              )}
+              {!selectedImage && categoryData?.slug && (
+                <img
+                  className="rounded h-full w-full object-cover"
+                  src={`http://res.cloudinary.com/dcwr0gis2/image/upload/ecommerce-app/category-image/${categoryData?.slug}.jpg`}
                   alt=""
                 />
               )}
@@ -121,12 +153,16 @@ const CategoryForm = ({ getCategory }) => {
           </div>
         )}
 
-        {!selectedImage && (
-          <p className="text-center w-full">Atleast Select an Image</p>
+        {!selectedImage && categoryData?.slug && (
+          <img
+            className="object-cover h-full w-full rounded-sm"
+            src={`http://res.cloudinary.com/dcwr0gis2/image/upload/ecommerce-app/category-image/${categoryData?.slug}.jpg`}
+            alt=""
+          />
         )}
       </div>
     </div>
   );
 };
 
-export default CategoryForm;
+export default CategoryUpdateForm;

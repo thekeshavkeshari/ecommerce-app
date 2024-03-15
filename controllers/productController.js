@@ -2,38 +2,51 @@ import slugify from "slugify";
 import crypto from "crypto";
 import productModel from "../models/productModel.js";
 import categoryModel from "../models/categoryModel.js";
-import sharp from "sharp";
-import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-  DeleteObjectCommand,
-} from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-
+import cloudinary from "cloudinary";
 import Razorpay from "razorpay";
 import orderModel from "../models/orderModel.js";
+import { log } from "console";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-const bucketName = process.env.AWS_BUCKET_NAME;
-const region = process.env.AWS_BUCKET_REGION;
-const accessKeyId = process.env.AWS_ACCESS_KEY;
-const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+async function handleUpload(dataURI, opt) {
+  const uploadResponse = await cloudinary.v2.uploader.upload(dataURI, {
+    public_id: opt,
+    folder: "ecommerce-app/product-image",
+  });
+  return uploadResponse.url;
+}
 
-const s3Client = new S3Client({
-  region,
-  credentials: {
-    accessKeyId,
-    secretAccessKey,
-  },
-});
-
-const generateFileName = (bytes = 32) =>
-  crypto.randomBytes(bytes).toString("hex");
+async function handleDelete(slug) {
+  const deleteResponce = await cloudinary.v2.api.delete_resources(
+    [`ecommerce-app/product-image/${slug}`],
+    {
+      type: "upload",
+      resource_type: "image",
+    }
+  );
+  return deleteResponce;
+}
+async function handleRename(slug1, slug2) {
+  const deleteResponce = await cloudinary.v2.uploader.rename(
+    `ecommerce-app/product-image/${slug1}`,
+    `ecommerce-app/product-image/${slug2}`,
+    {
+      type: "upload",
+      resource_type: "image",
+    }
+  );
+  return deleteResponce;
+}
 
 function generateReceiptId() {
   // Create a random string (you can customize the length as needed)
@@ -47,73 +60,6 @@ function generateReceiptId() {
 
   // return hash;
 }
-// export const createProductController = async (req, res) => {
-//   try {
-//     // Checking all data
-//     const { name, description, price, category, quantity } = req.body;
-
-//     // For Checking All fields
-//     if (!req.file) {
-//       return res.status(400).json({ error: "No file uploaded" });
-//     }
-
-//     switch (true) {
-//       case !name: {
-//         return res.status(400).json({ error: "Name is Required" });
-//       }
-//       case !description: {
-//         return res.status(400).json({ error: "Description is Required" });
-//       }
-//       case !price: {
-//         return res.status(400).json({ error: "Price is Required" });
-//       }
-//       case !category: {
-//         return res.status(400).json({ error: "Category is Required" });
-//       }
-//       case !quantity: {
-//         return res.status(400).json({ error: "Quantity is Required" });
-//       }
-//     }
-
-//     const file = req.file;
-
-//     // Configure the upload details to send to S3
-//     const fileName = generateFileName();
-
-//     // console.log(bucketName);
-//     // console.log(fileBuffer);
-//     // console.log(fileName);
-//     // console.log(file.mimetype);
-
-//     const uploadParams = {
-//       Bucket: bucketName,
-//       Body: file.buffer,
-//       Key: fileName,
-//       ContentType: file.mimetype,
-//     };
-//     //Send the upload to S3
-//     const imageRes = await s3Client.send(new PutObjectCommand(uploadParams));
-
-//     //For Adding product in MongoDB
-//     const newProduct = new productModel({
-//       ...req.body,
-//       slug: slugify(name),
-//       photo: fileName,
-//     });
-
-//     const result = await newProduct.save();
-//     res.status(200).send({
-//       success: true,
-//       message: "Product Added Successfully",
-//       result,
-//       imageRes,
-//     });
-//   } catch (error) {
-//     res
-//       .status(500)
-//       .send({ success: false, message: "Error in Adding Product", error });
-//   }
-// };
 
 export const createProductController = async (req, res) => {
   try {
@@ -143,40 +89,29 @@ export const createProductController = async (req, res) => {
       }
     }
 
-    const file = req.file;
-
-    // Compress the image using sharp
-    const compressedBuffer = await sharp(file.buffer)
-      .resize(500) // Resize to 500px width
-      .jpeg({ quality: 50 }) // Compress the image to 80% quality
-      .toBuffer();
-
-    // Configure the upload details to send to S3
-    const fileName = generateFileName();
-
-    const uploadParams = {
-      Bucket: bucketName,
-      Body: compressedBuffer, // Use the compressed image buffer
-      Key: fileName,
-      ContentType: file.mimetype,
-    };
-
-    // Send the upload to S3
-    const imageRes = await s3Client.send(new PutObjectCommand(uploadParams));
-
     // For Adding product in MongoDB
     const newProduct = new productModel({
       ...req.body,
       slug: slugify(name),
-      photo: fileName,
     });
 
     const result = await newProduct.save();
+
+    const b64 = Buffer.from(req.file.buffer).toString("base64");
+
+    let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+
+    try {
+      const cldRes = await handleUpload(dataURI, slugify(name));
+    } catch (error) {
+      await productModel.deleteOne({ slug: slugify(name) });
+      throw error;
+    }
+
     res.status(200).send({
       success: true,
       message: "Product Added Successfully",
       result,
-      imageRes,
     });
   } catch (error) {
     res
@@ -192,19 +127,6 @@ export const getProductController = async (req, res) => {
       .populate("category")
       .limit(12)
       .sort({ createdAt: -1 });
-
-    for (let product of products) {
-      // For each post, generate a signed URL and save it to the post object
-      product.photo = await getSignedUrl(
-        s3Client,
-        new GetObjectCommand({
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: product.photo,
-        }),
-        { expiresIn: 60 * 60 * 60 } // 60 seconds
-      );
-    }
-
     res.status(200).send({
       success: true,
       message: "All Products",
@@ -221,16 +143,6 @@ export const getSingleProductController = async (req, res) => {
   try {
     const slug = req.params.slug;
     const product = await productModel.findOne({ slug }).populate("category");
-
-    product.photo = await getSignedUrl(
-      s3Client,
-      new GetObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: product.photo,
-      }),
-      { expiresIn: 60 * 60 * 60 } // 60 seconds
-    );
-
     res.status(200).send({
       success: true,
       message: "Product",
@@ -242,22 +154,15 @@ export const getSingleProductController = async (req, res) => {
       .send({ success: false, message: "Error in finding Product", error });
   }
 };
+
 export const deleteProductController = async (req, res) => {
   try {
     const product = await productModel.findByIdAndDelete(req.params.pid);
-
-    const deleteParams = {
-      Bucket: process.env.AWS_BUCKET_NAME,
-      Key: product.photo,
-    };
-
-    const result = s3Client.send(new DeleteObjectCommand(deleteParams));
-
+    await handleDelete(product.slug);
     res.status(200).send({
       success: true,
       message: "Product deleted successfully",
       product,
-      result,
     });
   } catch (error) {
     res
@@ -270,55 +175,81 @@ export const updateProductController = async (req, res) => {
   try {
     // Checking all data
     const { name, description, price, category, quantity } = req.body;
-
-    // For Checking All fields
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
+    const update = {};
+    if (name) {
+      update.name = name;
+      update.slug = slugify(name);
+    }
+    if (description) {
+      update.description = description;
+    }
+    if (price) {
+      update.price = price;
+    }
+    if (category) {
+      // update.category = JSON.parse(category)._id;
+      update.category = category;
+    }
+    console.log(category);
+    if (quantity) {
+      update.quantity = quantity;
     }
 
-    switch (true) {
-      case !name: {
-        return res.status(400).json({ error: "Name is Required" });
-      }
-      case !description: {
-        return res.status(400).json({ error: "Description is Required" });
-      }
-      case !price: {
-        return res.status(400).json({ error: "Price is Required" });
-      }
-      case !category: {
-        return res.status(400).json({ error: "Category is Required" });
-      }
-      case !quantity: {
-        return res.status(400).json({ error: "Quantity is Required" });
-      }
+    const slug = req.params.slug;
+    console.log(req.body);
+    console.log(slug);
+    console.log("Ye Update hai ", update);
+
+    // const response = await productModel.findById(slug);
+    const response = await productModel.findByIdAndUpdate(slug, update);
+    console.log(response);
+
+    if (response == null) {
+      res.status(400).send({
+        success: true,
+        message: "Product did not find",
+      });
+      return;
     }
 
-    const file = req.file;
+    console.log("slugify(name) = ", slugify(name));
+    console.log("slugify(response.name) = ", slugify(response.name));
+    console.log(slugify(name) === slugify(response.name));
 
-    //Updating fields
-    const product = await productModel.findByIdAndUpdate(
-      req.params.pid,
-      { ...req.body, slug: slugify(name) },
-      { new: true }
-    );
-
-    // Configure the upload details to send to S3
-
-    const uploadParams = {
-      Bucket: bucketName,
-      Body: file.buffer,
-      Key: product.photo,
-      ContentType: file.mimetype,
-    };
-    //Send the upload to S3
-    const imageRes = await s3Client.send(new PutObjectCommand(uploadParams));
+    if (req.file) {
+      const b64 = Buffer.from(req.file.buffer).toString("base64");
+      let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+      try {
+        if (!(slugify(name) === slugify(response.name))) {
+          const dlres = await handleDelete(slugify(response.name));
+          console.log(dlres);
+        }
+        const cldRes = await handleUpload(dataURI, slugify(name));
+        console.log(cldRes);
+      } catch (error) {
+        throw error;
+      }
+    } else {
+      console.log("Yaha Aaya Hai");
+      try {
+        console.log("Yaha Aaya Hai");
+        if (!(slugify(name) === slugify(response.name))) {
+          console.log("Yaha Aaya Hai");
+          const cldRes = await handleRename(
+            slugify(response.name),
+            slugify(name)
+          );
+          console.log(cldRes);
+        }
+      } catch (error) {
+        throw error;
+      }
+    }
 
     res.status(200).send({
       success: true,
       message: "Product Updated Successfully",
-      product,
-      imageRes,
+      // updateCategory,
     });
   } catch (error) {
     res
@@ -326,55 +257,6 @@ export const updateProductController = async (req, res) => {
       .send({ success: false, message: "Error in Updating Product", error });
   }
 };
-
-export const getSingleProductImageController = async (req, res) => {
-  try {
-    const product = await productModel.findById(req.params.id);
-
-    const params = {
-      Bucket: bucketName,
-      Key: product.photo,
-    };
-
-    const getObjectCommand = new GetObjectCommand(params);
-
-    const data = await s3Client.send(getObjectCommand);
-
-    // Determine content type based on image format (adjust logic as needed)
-    const contentType = getContentTypeFromImageFormat(
-      product.photo.split(".").pop()
-    );
-    res.setHeader("Content-Type", contentType);
-    data.Body.pipe(res);
-    data.Body.on("close", () => {
-      res.end();
-    });
-  } catch (error) {
-    console.error("Error fetching image from S3:", error);
-    res.status(500).send("Internal Server Error");
-  }
-};
-
-// Helper function to determine content type from image format (example)
-function getContentTypeFromImageFormat(format) {
-  switch (format.toLowerCase()) {
-    case "jpg":
-    case "jpeg":
-      return "image/jpeg";
-    case "png":
-      return "image/png";
-    case "gif":
-      return "image/gif";
-    case "bmp":
-      return "image/bmp";
-    case "webp":
-      return "image/webp";
-    case "svg":
-      return "image/svg+xml";
-    default:
-      return "image/octet-stream"; // Generic fallback for unknown formats
-  }
-}
 
 //filters
 export const productFiltersController = async (req, res) => {
@@ -389,18 +271,6 @@ export const productFiltersController = async (req, res) => {
     const products = await productModel.find(args).limit(6 * parseInt(page));
 
     console.log(products);
-
-    for (let product of products) {
-      // For each post, generate a signed URL and save it to the post object
-      product.photo = await getSignedUrl(
-        s3Client,
-        new GetObjectCommand({
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: product.photo,
-        }),
-        { expiresIn: 60 * 60 * 60 } // 60 seconds
-      );
-    }
 
     res.status(200).send({
       success: true,
@@ -443,17 +313,7 @@ export const productListController = async (req, res) => {
       .skip((+page - 1) * +perPage)
       .limit(perPage)
       .sort({ createdAt: -1 });
-    for (let product of products) {
-      // For each post, generate a signed URL and save it to the post object
-      product.photo = await getSignedUrl(
-        s3Client,
-        new GetObjectCommand({
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: product.photo,
-        }),
-        { expiresIn: 60 * 60 * 60 } // 60 seconds
-      );
-    }
+    
     res.status(200).send({
       success: true,
       products,
@@ -477,17 +337,7 @@ export const searchProductController = async (req, res) => {
         { description: { $regex: new RegExp(keyword, "i") } },
       ],
     });
-    for (let product of products) {
-      // For each post, generate a signed URL and save it to the post object
-      product.photo = await getSignedUrl(
-        s3Client,
-        new GetObjectCommand({
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: product.photo,
-        }),
-        { expiresIn: 60 * 60 * 60 } // 60 seconds
-      );
-    }
+
     res.status(200).send({
       success: true,
       product: products,
@@ -515,17 +365,6 @@ export const relatedProductController = async (req, res) => {
       })
       .limit(4)
       .populate("category");
-    for (let product of products) {
-      // For each post, generate a signed URL and save it to the post object
-      product.photo = await getSignedUrl(
-        s3Client,
-        new GetObjectCommand({
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: product.photo,
-        }),
-        { expiresIn: 60 * 60 * 60 } // 60 seconds
-      );
-    }
     res.status(200).send({
       success: true,
       product: products,
@@ -546,17 +385,7 @@ export const productCategoryController = async (req, res) => {
     const category = await categoryModel.findOne({ slug });
 
     const products = await productModel.find({ category }).populate("category");
-    for (let product of products) {
-      // For each post, generate a signed URL and save it to the post object
-      product.photo = await getSignedUrl(
-        s3Client,
-        new GetObjectCommand({
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: product.photo,
-        }),
-        { expiresIn: 60 * 60 * 60 } // 60 seconds
-      );
-    }
+
     res.status(200).send({
       success: true,
       product: products,

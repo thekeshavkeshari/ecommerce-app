@@ -24,8 +24,8 @@ const CreateProduct = () => {
   }
 
   function handeler(e) {
-     const { name, value } = e.target;
-     setProduct((prev) => ({ ...prev, [name]: value }));
+    const { name, value } = e.target;
+    setProduct((prev) => ({ ...prev, [name]: value }));
   }
 
   const getCategory = async () => {
@@ -45,18 +45,21 @@ const CreateProduct = () => {
     getCategory();
   }, []);
 
-  const sendToCreate =async (e)=>{
+  const sendToCreate = async (e) => {
     e.preventDefault();
     console.log(product);
     try {
+      const form = new FormData();
+      form.append("my_file", product.photo);
+      form.append("name", product.name);
+      form.append("category", product.category);
+      form.append("description", product.description);
+      form.append("price", product.price);
+      form.append("shipping", product.shipping);
+      form.append("quantity", product.quantity);
       const { data } = await axios.post(
         "http://localhost:8080/api/v1/product/create-product",
-        product,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data", // Important for file uploads
-          },
-        }
+        form
       );
       if (data?.success) {
         enqueueSnackbar(data.message, { variant: "success" });
@@ -66,7 +69,7 @@ const CreateProduct = () => {
       enqueueSnackbar("Somthing went wrong", { variant: "error" });
       console.log(error);
     }
-  }
+  };
 
   return (
     <AdminContent title={"Dashboard - Create Product"}>
@@ -80,11 +83,11 @@ const CreateProduct = () => {
           )}
 
           <div className="mt-4 w-full">
-            <label className="rounded block  bg-black text-white p-2 w-full">
+            <label className="rounded block  bg-[#4D4D4D] text-white p-2 w-full">
               {product.photo ? product.photo.name : "Upload an image"}
               <input
                 type="file"
-                name="photo"
+                name="my_file"
                 onChange={handleSet}
                 accept="image/*"
                 className="mt-2 w-full"
@@ -96,14 +99,13 @@ const CreateProduct = () => {
 
           <div className="mt-2 flex justify-center">
             {product.photo && (
-              <div>
-                <img
-                  src={URL.createObjectURL(product.photo)}
-                  alt="image"
-                  className="rounded w-[200px]"
-
-                />
-              </div>
+              // <div>
+              <img
+                src={URL.createObjectURL(product.photo)}
+                alt="image"
+                className="rounded h-[300px] w-full sm:w-[600px] object-cover"
+              />
+              // </div>
             )}
           </div>
           <div className="mt-2 flex flex-col gap-1">
@@ -148,10 +150,15 @@ const CreateProduct = () => {
               type="checkbox"
               name="shipping"
               value={product.shipping}
-              onChange={()=>setProduct((prev)=>({...prev,shipping:!prev.shipping}))}
+              onChange={() =>
+                setProduct((prev) => ({ ...prev, shipping: !prev.shipping }))
+              }
               className="w-10 border-black h-10 border-2 rounded bg-transparent my-1 "
             />
-            <button className="rounded w-full bg-black text-white h-10" type="submit">
+            <button
+              className="rounded w-full bg-[#4D4D4D] text-white h-10"
+              type="submit"
+            >
               Add
             </button>
           </div>
