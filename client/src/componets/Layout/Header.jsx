@@ -47,7 +47,6 @@ export default function Header(props) {
     localStorage.removeItem("auth");
     enqueueSnackbar("Logout Successfully", { variant: "success" });
     navigate("/login");
-    // toast.success("Logout Successfully");
   }
 
   const [cross, setCross] = useState(false);

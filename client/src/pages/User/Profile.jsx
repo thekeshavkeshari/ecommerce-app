@@ -65,7 +65,7 @@ const Profile = () => {
         <div className="sm:flex-1 sm:m-4">
           <h1 className="text-center text-2xl">Your Profile</h1>
           <div className="flex justify-center items-center h-full">
-            <form className="flex flex-col font-poppins" onSubmit={submitForm}>
+            <form className="flex flex-col font-serif" onSubmit={submitForm}>
               <label htmlFor="name" className="font-bold">
                 Name
               </label>
@@ -149,7 +149,7 @@ const Profile = () => {
               />
               <button
                 type="submit"
-                className="duration-[300ms] transform-x h-10 w-[20rem] mb-2 border-2 border-black text-white bg-black hover:text-black hover:bg-transparent"
+                className="duration-[300ms] transform-x h-10 w-[20rem] mb-2 border-2 border-black text-white bg-[#4d4d4d] hover:text-black hover:bg-transparent"
               >
                 Update
               </button>

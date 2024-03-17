@@ -3,7 +3,7 @@ import Layout from "../../componets/Layout/Layout.jsx";
 // import { toast } from 'react-hot-toast';
 import { enqueueSnackbar } from "notistack";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [state, setstate] = useState({
@@ -52,9 +52,9 @@ export default function Register() {
 
   return (
     <Layout title="register">
-      <div className="flex justify-center items-center h-full">
-        <form className="flex flex-col font-poppins" onSubmit={submitForm}>
-          <label htmlFor="name" className="font-bold">
+      <div className="flex justify-center items-center h-full my-4">
+        <form className="flex flex-col " onSubmit={submitForm}>
+          <label htmlFor="name" className="font-serif">
             Name
           </label>
           <input
@@ -67,7 +67,7 @@ export default function Register() {
             className="h-10 w-[20rem] mb-2 border-2 border-black bg-transparent "
           />
 
-          <label htmlFor="email" className="font-bold">
+          <label htmlFor="email" className="font-serif">
             Email
           </label>
           <input
@@ -80,7 +80,7 @@ export default function Register() {
             className="h-10 w-[20rem] mb-2 border-2 border-black bg-transparent "
           />
 
-          <label htmlFor="password" className="font-bold">
+          <label htmlFor="password" className="font-serif">
             Password
           </label>
           <input
@@ -93,7 +93,7 @@ export default function Register() {
             className="h-10 w-[20rem] mb-2 border-2 border-black bg-transparent "
           />
 
-          <label htmlFor="phone" className="font-bold">
+          <label htmlFor="phone" className="font-serif">
             Phone no.
           </label>
           <input
@@ -107,7 +107,7 @@ export default function Register() {
             className="h-10 w-[20rem] mb-2 border-2 border-black bg-transparent "
           />
 
-          <label htmlFor="question" className="font-bold">
+          <label htmlFor="question" className="font-serif">
             Security Question
           </label>
           <input
@@ -121,7 +121,7 @@ export default function Register() {
             className="h-10 w-[20rem] mb-2 border-2 border-black bg-transparent "
           />
 
-          <label htmlFor="address" className="font-bold">
+          <label htmlFor="address" className="font-serif">
             Address
           </label>
           <textarea
@@ -136,10 +136,13 @@ export default function Register() {
           />
           <button
             type="submit"
-            className="duration-[300ms] transform-x h-10 w-[20rem] mb-2 border-2 border-black text-white bg-black hover:text-black hover:bg-transparent"
+            className="duration-[300ms] font-serif transform-x h-10 w-[20rem] mb-2 border-2 border-[#4d4d4d] text-white bg-[#4d4d4d] hover:text-black hover:bg-transparent"
           >
             Sign Up
           </button>
+          <div>
+            {<NavLink to={"/login"}>Registerd User Want To Login</NavLink>}
+          </div>
         </form>
       </div>
     </Layout>

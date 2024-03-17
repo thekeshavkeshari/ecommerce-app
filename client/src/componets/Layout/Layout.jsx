@@ -1,5 +1,5 @@
 import React from "react";
-import Header from "./Header.jsx";
+import NavBar from "./NavBar.jsx";
 import Footer from "./Footer.jsx";
 import { Helmet } from "react-helmet";
 export default function Layout({
@@ -22,7 +22,8 @@ export default function Layout({
         <title>{title}</title>
       </Helmet>
 
-      <Header title={title} />
+      
+      <NavBar />
       <main className="flex-1 ">{children}</main>
       <Footer className="mt-auto fixed" />
     </div>

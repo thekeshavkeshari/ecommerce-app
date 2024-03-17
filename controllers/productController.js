@@ -313,7 +313,7 @@ export const productListController = async (req, res) => {
       .skip((+page - 1) * +perPage)
       .limit(perPage)
       .sort({ createdAt: -1 });
-    
+
     res.status(200).send({
       success: true,
       products,
@@ -435,10 +435,12 @@ export const paymentVerificationController = async (req, res) => {
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (isAuthentic) {
-      // console.log(req);
+      console.log(cart);
 
-      const order = new orderModel({
-        products: cart,
+      const order = await new orderModel({
+        products: cart.map((element, index) => {
+          return { id: element.id, quantity: element.quantity };
+        }),
         buyer: req.user._id,
         payment: {
           razorpay_order_id,
@@ -446,6 +448,7 @@ export const paymentVerificationController = async (req, res) => {
           razorpay_signature,
         },
       }).save();
+      console.log(order);
 
       res.status(200).send({
         success: true,
@@ -459,6 +462,25 @@ export const paymentVerificationController = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    res.status(400).send({
+      success: false,
+      message: error,
+    });
+  }
+};
+
+export const searchOrderByIdController = async (req, res) => {
+  try {
+    const { cid } = req.params;
+    const orders = await orderModel
+      .find({ buyer: cid })
+      .populate("products")
+      .exec();
+    res.status(200).send({
+      success:true,
+      orders
+    })  
+  } catch (error) {
     res.status(400).send({
       success: false,
       message: error,

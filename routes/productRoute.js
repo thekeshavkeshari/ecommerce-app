@@ -14,6 +14,7 @@ import {
   productCategoryController,
   razorOrderIdController,
   paymentVerificationController,
+  searchOrderByIdController,
 } from "../controllers/productController.js";
 import Multer from "multer";
 
@@ -63,6 +64,9 @@ router.get("/product-category/:slug", productCategoryController);
 
 //Payment route for Razorpay
 router.post("/order", requireSignIn, razorOrderIdController);
+
+//To get orders
+router.get("/get-order/:cid",requireSignIn, searchOrderByIdController);
 
 router.post(
   "/paymentVerification",

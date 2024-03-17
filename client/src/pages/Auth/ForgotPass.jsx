@@ -3,7 +3,7 @@ import Layout from "../../componets/Layout/Layout.jsx";
 // import { toast } from "react-hot-toast";
 import { enqueueSnackbar } from "notistack";
 import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, NavLink } from "react-router-dom";
 import { useAuth } from "../../context/auth.jsx";
 
 export default function Login() {
@@ -14,7 +14,7 @@ export default function Login() {
   const [state, setstate] = useState({
     password: "",
     email: "",
-    question:""
+    question: "",
   });
 
   // For Upadating Form Values
@@ -33,7 +33,7 @@ export default function Login() {
     e.preventDefault();
     console.log(e);
     try {
-      const { email, password,question } = state;
+      const { email, password, question } = state;
       const res = await axios.post(
         `${"http://localhost:8080"}/api/v1/auth/forgotpassword`,
         { email, password, question }
@@ -41,16 +41,16 @@ export default function Login() {
 
       if (res && res.data.success) {
         // toast.success(res && res.data.message);
-        enqueueSnackbar(res && res.data.message,{variant:"success"});
+        enqueueSnackbar(res && res.data.message, { variant: "success" });
         navigate("/login");
       } else {
         //toast.error(res.data.message);
-        enqueueSnackbar(res.data.message,{variant:"warning"});
+        enqueueSnackbar(res.data.message, { variant: "warning" });
       }
     } catch (error) {
       console.log(error);
       //toast.error("Something went wrong");
-      enqueueSnackbar("Something went wrong",{variant:"error"});
+      enqueueSnackbar("Something went wrong", { variant: "error" });
     }
   }
   return (
@@ -58,7 +58,7 @@ export default function Login() {
       <div className="flex flex-col justify-center items-center h-[77vh]">
         <div>
           <form className="flex flex-col font-poppins" onSubmit={submitForm}>
-            <label htmlFor="email" className="font-bold">
+            <label htmlFor="email" className="font-serif">
               Email
             </label>
             <input
@@ -70,7 +70,7 @@ export default function Login() {
               value={state.email}
               className="h-10 w-[20rem] mb-2 border-2 border-black bg-transparent "
             />
-            <label htmlFor="password" className="font-bold">
+            <label htmlFor="password" className="font-serif">
               New Password
             </label>
             <input
@@ -83,7 +83,7 @@ export default function Login() {
               value={state.password}
               className="h-10 w-[20rem] mb-2 border-2 border-black bg-transparent "
             />
-            <label htmlFor="question" className="font-bold">
+            <label htmlFor="question" className="font-serif">
               Security Question
             </label>
             <input
@@ -98,12 +98,16 @@ export default function Login() {
             />
             <button
               type="submit"
-              className="duration-[300ms] transform-x h-12 w-[20rem] mb-2 border-2 border-black text-white bg-black hover:text-black hover:bg-transparent "
+              className="duration-[300ms] font-serif transform-x h-12 w-[20rem] mb-2 border-2 border-[#4d4d4d] text-white bg-[#4d4d4d] hover:text-black hover:bg-transparent "
             >
               Submit
             </button>
+            <div>
+              <NavLink to={`/login`} className="font-serif my-3">
+                Way to Login
+              </NavLink>
+            </div>
           </form>
-
         </div>
       </div>
     </Layout>

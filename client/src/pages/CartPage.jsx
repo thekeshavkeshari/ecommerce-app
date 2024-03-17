@@ -16,12 +16,13 @@ const CartPage = () => {
     console.log(handerResponse);
     try {
       const { data } = await axios.post(
-        "http://localhost:8080/api/v1/product/paymentVerification",{...handerResponse,cart}
+        "http://localhost:8080/api/v1/product/paymentVerification",
+        { ...handerResponse, cart }
       );
       if (data?.success) {
         enqueueSnackbar(data.message, { variant: "success" });
         setCart([]);
-        localStorage.setItem('cart',"");
+        localStorage.setItem("cart", "");
       }
     } catch (error) {
       console.log(error);
@@ -50,8 +51,11 @@ const CartPage = () => {
     try {
       let tprice = 0;
       if (cart) {
-        tprice = cart?.reduce((accumulator, currentValue) => {
-          return accumulator + currentValue.price;
+        // tprice = cart?.reduce((accumulator, currentValue) => {
+        //   return accumulator + currentValue.price;
+        // }, 0);
+        tprice = cart?.reduce((total, currentItem) => {
+          return total + currentItem.price * currentItem.quantity;
         }, 0);
       }
       return tprice;
@@ -66,7 +70,7 @@ const CartPage = () => {
         enqueueSnackbar("Login for checkout", { variant: "warning" });
         return;
       }
-      if (cart.length<1) {
+      if (cart.length < 1) {
         enqueueSnackbar("Add some Products ", { variant: "warning" });
         return;
       }
@@ -80,9 +84,10 @@ const CartPage = () => {
         const options = {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID,
           amount: order.amount,
-          name: "Keshav Keshari",
+          name: "Wall Colors",
           description: "Ecommerce App Integration with RazorPay",
-          image: "https://avatars.githubusercontent.com/u/102542178?v=4",
+          image:
+            "http://res.cloudinary.com/dcwr0gis2/image/upload/updrteoysouqhrstcxoi.jpg",
           order_id: order.id,
           handler: async (response) => {
             setHanderResponse({ ...response });
@@ -130,43 +135,50 @@ const CartPage = () => {
           : "Your Cart is Empty"}
       </div>
 
-      <div className="sm:flex">
-        <div className="m-4 flex-1">
-          {cart.map((item, index) => {
-            return (
-              <div key={index} className="flex border relative p-2">
-                <img
-                  src={item.photo}
-                  className="w-20 aspect-square rounded"
-                  alt={item.slug}
-                />
-                <div>
-                  <h3 className="text-2xl px-2 ">{item.name}</h3>
-                  <h4 className="text-xl p-2">Price : ${item.price}</h4>
-                  <h4>{item?.category?.name}</h4>
-                  <button
-                    onClick={() => {
-                      console.log("Remove Cart Button is Clicked");
-                      removeCartItem(item._id);
-                    }}
-                    className="rounded-full border p-1 text-white bg-red-500 absolute right-[5px] bottom-[7px]"
-                  >
-                    <RxCross2 />
-                  </button>
+      <div className="sm:flex ">
+        {cart?.length > 0 && (
+          <div className="m-4 flex-1">
+            {cart.map((item, index) => {
+              return (
+                <div key={index} className="flex border relative p-2">
+                  <img
+                    src={`http://res.cloudinary.com/dcwr0gis2/image/upload/ecommerce-app/product-image/${item?.slug}.jpg`}
+                    className="w-20 aspect-square rounded object-cover"
+                    alt={item.slug}
+                  />
+                  <div>
+                    <h3 className="text-xl px-2 text-[#4d4d4d] truncate">
+                      {item.name}
+                    </h3>
+                    <h4 className="text-sm p-2 font-light text-[#4d4d4d]">
+                      Price : Rs.{item.price}
+                    </h4>
+                    <h4 className="px-2">Quantity : {item?.quantity}</h4>
+                    <button
+                      onClick={() => {
+                        console.log("Remove Cart Button is Clicked");
+                        removeCartItem(item._id);
+                      }}
+                      className="rounded-full border p-1 text-white bg-red-500 absolute right-[5px] bottom-[7px]"
+                    >
+                      <RxCross2 />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="m-4 flex-1">
-          <h5 className="text-xl font-semibold">
+              );
+            })}
+          </div>
+        )}
+
+        <div className="m-4 flex-1 text-center">
+          <h5 className="text-xl font-semibold mb-4 text-[#4d4d4d]">
             {auth?.user ? `Your Address :` : "Please Login "}
           </h5>
-          <h5>{auth?.user ? `${auth.user.address}` : ""}</h5>
+          <h5 className="mb-4">{auth?.user ? `${auth.user.address}` : ""}</h5>
           {auth?.user ? (
             <button
               onClick={() => navigate("/dashboard/user/profile")}
-              className="p-2  border mt-2 bg-yellow-200 rounded"
+              className="p-2  border mt-2 bg-[#4d4d4d] text-white rounded"
             >
               Update Address
             </button>
@@ -184,11 +196,11 @@ const CartPage = () => {
       <div className="w-full bg-white">
         <div className="flex fixed bottom-0 left-0 w-full p-4 border justify-around bg-white">
           <div className="p-2 border rounded">
-            Total Price : ${totalPrice()}
+            Total Price : Rs.{totalPrice()}
           </div>
           <button
             onClick={handlePayWithRazor}
-            className="p-2 px-10 border bg-yellow-400 rounded"
+            className="p-2 px-10 border bg-[#4d4d4d] text-white rounded"
           >
             Checkout
           </button>

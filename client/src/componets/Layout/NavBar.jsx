@@ -1,16 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { CiMenuBurger, CiShoppingCart, CiSearch, CiUser } from "react-icons/ci";
 import { TfiClose } from "react-icons/tfi";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useSearch } from "../../context/Search";
 import axios from "axios";
+import { RxDashboard } from "react-icons/rx";
+import { useAuth } from "../../context/auth";
+import { IoIosLogOut } from "react-icons/io";
 
 const NavBar = () => {
   const [menu, setMenu] = useState(false);
+  const [auth, setAuth] = useAuth();
+
   const [search, setSearch] = useState(false);
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [values, setValues] = useSearch();
+
+  function handleLogout() {
+    setAuth({
+      ...auth,
+      user: null,
+      token: "",
+    });
+
+    localStorage.removeItem("auth");
+    navigate("/login");
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +37,7 @@ const NavBar = () => {
       );
       console.log(data.product);
       setSearchText("");
-      setValues({ results: data.product }||{});
+      setValues({ results: data.product } || {});
       navigate("/search");
       console.log("aur Bhai");
     } catch (error) {
@@ -42,14 +58,42 @@ const NavBar = () => {
                 <CiMenuBurger />
               </button>
             </div>
-            <div className="text-[#90281b] text-xl font-serif">Wall Colors</div>
+            <NavLink to={"/"} className="text-[#90281b] text-xl font-serif">
+              Wall Colors
+            </NavLink>
             <div className="flex text-3xl gap-2">
-              <CiShoppingCart />
-              <CiSearch
+              {auth.user == null ? (
+                <NavLink to="/login" className="md:flex hidden items-center">
+                  <CiUser className="text-[1.7rem]" />
+                </NavLink>
+              ) : (
+                <button
+                  onClick={handleLogout}
+                  className="md:flex hidden items-center"
+                >
+                  <IoIosLogOut className="text-black" />
+                </button>
+              )}
+
+              {auth.user && (
+                <NavLink
+                  to={`/dashboard/${auth.user.role == 1 ? "admin" : "user"}`}
+                  className={"md:flex items-center hidden "}
+                >
+                  <RxDashboard className="text-[#4d4d4d]  text-2xl" />
+                </NavLink>
+              )}
+
+              <button onClick={() => navigate("/cart")}>
+                <CiShoppingCart />
+              </button>
+              <button
                 onClick={() => {
                   setSearch(!search);
                 }}
-              />
+              >
+                <CiSearch />
+              </button>
             </div>
           </>
         )}
@@ -72,11 +116,13 @@ const NavBar = () => {
               />
             </form>
             <div className="text-xl flex  items-center">
-              <TfiClose
+              <button
                 onClick={() => {
                   setSearch(!search);
                 }}
-              />
+              >
+                <TfiClose />
+              </button>
             </div>
           </>
         )}
@@ -98,11 +144,32 @@ const NavBar = () => {
           <hr />
           <li className="mt-6 mb-6 ">Shop by Room</li>
           <hr />
-          <li className="mt-6 mb-6">Shop by Collection</li>
+          <li className="mt-6 mb-6">
+            <NavLink to={`/categories`}>Shop by Collection</NavLink>
+          </li>
           <hr />
         </ul>
-        <div className="mx-10 mt-16 text-2xl flex gap-1">
-          <CiUser /> <p className="text-base">Account</p>
+        <div className="mx-10 mt-16 text-2xl ">
+          {auth.user == null ? (
+            <NavLink to={"/login"} className="flex">
+              <CiUser className="text-black" />
+              <p className="text-base">Login</p>
+            </NavLink>
+          ) : (
+            <button onClick={handleLogout} className="flex">
+              <IoIosLogOut className="text-black" />
+              <p className="text-base">Logout</p>
+            </button>
+          )}
+          {auth.user && (
+            <NavLink
+              to={`/dashboard/${auth.user.role == 1 ? "admin" : "user"}`}
+              className="flex mt-4"
+            >
+              <RxDashboard className="text-[#4d4d4d]  font-thin" />
+              <p className="text-base">DashBoard</p>
+            </NavLink>
+          )}
         </div>
       </div>
     </>
