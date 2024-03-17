@@ -14,7 +14,7 @@ const CategoryUpdateForm = ({ slug }) => {
   const getCategory = async () => {
     try {
       const { data } = await axios.get(
-        `http://localhost:8080/api/v1/category/single-category/${slug}`
+        `${import.meta.env.VITE_START}/api/v1/category/single-category/${slug}`
       );
       if (data.success && data.category) {
         setCategoryData({
@@ -48,7 +48,7 @@ const CategoryUpdateForm = ({ slug }) => {
       cat_data.append("categoryTitle", categoryData.categoryTitle);
 
       const { data } = await axios.put(
-        `http://localhost:8080/api/v1/category/update-category/${slug}`,
+        `${import.meta.env.VITE_START}/api/v1/category/update-category/${slug}`,
 
         cat_data
       );

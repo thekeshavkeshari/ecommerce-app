@@ -10,7 +10,7 @@ const Products = () => {
   const getAllProducts = async () => {
     try {
       const { data } = await axios.get(
-        "http://localhost:8080/api/v1/product/get-product"
+        `${import.meta.env.VITE_START}/api/v1/product/get-product`
       );
       // if (data.success) {
       setProduct(data.products);

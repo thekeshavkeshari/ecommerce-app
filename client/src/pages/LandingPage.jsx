@@ -16,7 +16,7 @@ const LandingPage = () => {
     try {
       console.log("Hi");
       const { data } = await axios.get(
-        `http://localhost:8080/api/v1/product/product-list/1`
+        `${import.meta.env.VITE_START}/api/v1/product/product-list/1`
       );
       setProduct(data.products || []);
     } catch (error) {

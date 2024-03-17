@@ -16,7 +16,7 @@ const CartPage = () => {
     console.log(handerResponse);
     try {
       const { data } = await axios.post(
-        "http://localhost:8080/api/v1/product/paymentVerification",
+        `${import.meta.env.VITE_START}/api/v1/product/paymentVerification`,
         { ...handerResponse, cart }
       );
       if (data?.success) {
@@ -76,9 +76,12 @@ const CartPage = () => {
       }
       const {
         data: { order },
-      } = await axios.post("http://localhost:8080/api/v1/product/order", {
-        amount: totalPrice() * 100,
-      });
+      } = await axios.post(
+        `${import.meta.env.VITE_START}/api/v1/product/order`,
+        {
+          amount: totalPrice() * 100,
+        }
+      );
 
       if (order) {
         const options = {

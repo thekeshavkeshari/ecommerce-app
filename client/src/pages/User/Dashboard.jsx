@@ -19,7 +19,7 @@ export default function Dashboard() {
         </div>
         <div className="flex gap-4  p-2 rounded-sm m-5 border">
           <img
-            src={`https://picsum.photos/id/${Math.floor(Math.random()*100+ 1)}/100/100`}
+            src={`https://picsum.photos/id/2/100/100`}
             className="rounded-full w-[120px] h-[120px]"
             alt="example image"
           />

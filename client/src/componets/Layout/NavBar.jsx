@@ -33,7 +33,7 @@ const NavBar = () => {
     try {
       console.log("Searching for:", searchText);
       const { data } = await axios.get(
-        `http://localhost:8080/api/v1/product/search/${searchText}`
+        `${import.meta.env.VITE_START}/api/v1/product/search/${searchText}`
       );
       console.log(data.product);
       setSearchText("");

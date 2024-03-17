@@ -34,7 +34,7 @@ export default function Login() {
     try {
       const { email, password } = state;
       const res = await axios.post(
-        `${"http://localhost:8080"}/api/v1/auth/login`,
+        `${import.meta.env.VITE_START}/api/v1/auth/login`,
         { email, password }
       );
 

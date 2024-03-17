@@ -15,7 +15,7 @@ const CreateCategory = () => {
   const getCategory = async () => {
     try {
       const { data } = await axios.get(
-        "http://localhost:8080/api/v1/category/get-category"
+        `${import.meta.env.VITE_START}/api/v1/category/get-category`
       );
       if (data.success) {
         setCategory(data?.category);
@@ -33,7 +33,7 @@ const CreateCategory = () => {
   const deleteCategory = async (categoryid) => {
     try {
       const { data } = await axios.delete(
-        `http://localhost:8080/api/v1/category/delete-category/${categoryid}`,
+        `${import.meta.env.VITE_START}/api/v1/category/delete-category/${categoryid}`,
         {
           // You can include headers or other configuration options here
         }

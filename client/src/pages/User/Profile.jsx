@@ -27,7 +27,7 @@ const Profile = () => {
     try {
       const { name, email, password, phone, address, question } = state;
       const res = await axios.put(
-        `${"http://localhost:8080"}/api/v1/auth/profile`,
+        `${import.meta.env.VITE_START}/api/v1/auth/profile`,
         { name, email, password, phone, address, question }
       );
 

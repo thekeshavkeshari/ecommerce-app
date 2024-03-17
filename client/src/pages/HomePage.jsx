@@ -54,7 +54,7 @@
 //       }
 
 //       const { data } = await axios.get(
-//         `http://localhost:8080/api/v1/product/product-list/${page}`
+//         `${import.meta.env.VITE_START}/api/v1/product/product-list/${page}`
 //       );
 //       console.log("Page : ", page);
 //       setPage(page + 1);
@@ -74,7 +74,7 @@
 //   const getTotal = async () => {
 //     try {
 //       const { data } = await axios.get(
-//         `http://localhost:8080/api/v1/product/product-count`
+//         `${import.meta.env.VITE_START}/api/v1/product/product-count`
 //       );
 
 //       setTotal(data.total);
@@ -124,7 +124,7 @@
 //         return;
 //       }
 //       const { data } = await axios.post(
-//         `http://localhost:8080/api/v1/product/product-filters`,
+//         `${import.meta.env.VITE_START}/api/v1/product/product-filters`,
 //         { checked, value, page }
 //       );
 //       console.log(data?.products);
@@ -145,7 +145,7 @@
 //   const getCategory = async () => {
 //     try {
 //       const { data } = await axios.get(
-//         "http://localhost:8080/api/v1/category/get-category"
+//         "${import.meta.env.VITE_START}/api/v1/category/get-category"
 //       );
 //       // console.log(data.category);
 //       setCategories(data.category);
@@ -330,7 +330,7 @@ const HomePage = () => {
   const getAllProducts = async () => {
     try {
       const { data } = await axios.get(
-        `http://localhost:8080/api/v1/product/product-list/${page}`
+        `${import.meta.env.VITE_START}/api/v1/product/product-list/${page}`
       );
       setProduct(data.products || []);
       // console.log(categories);
@@ -342,7 +342,7 @@ const HomePage = () => {
   const getTotalCount = async () => {
     try {
       const { data } = await axios.get(
-        `http://localhost:8080/api/v1/product/product-count/`
+        `${import.meta.env.VITE_START}/api/v1/product/product-count/`
       );
       let tl = Number(data.total);
       let one = tl % 6 > 0 ? 1 : 0;

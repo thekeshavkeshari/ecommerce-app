@@ -27,7 +27,7 @@ const UpdateProduct = () => {
   const getSingleProduct = async () => {
     try {
       const { data } = await axios.get(
-        `http://localhost:8080/api/v1/product/get-product/${params.slug}`
+        `${import.meta.env.VITE_START}/api/v1/product/get-product/${params.slug}`
       );
       console.log(data.product);
       setProduct({
@@ -42,7 +42,7 @@ const UpdateProduct = () => {
       });
 
       // const response = await axios.get(
-      //   `http://localhost:8080/api/v1/product/get-product-photo/${data.product._id}`,
+      //   `${import.meta.env.VITE_START}/api/v1/product/get-product-photo/${data.product._id}`,
       //   { responseType: "arraybuffer" }
       // );
       // const pic = new File([new Blob([response.data])], params.slug, {
@@ -73,7 +73,7 @@ const UpdateProduct = () => {
   const getCategory = async () => {
     try {
       const { data } = await axios.get(
-        "http://localhost:8080/api/v1/category/get-category"
+        `${import.meta.env.VITE_START}/api/v1/category/get-category`
       );
       if (data?.success) {
         setCategories(data?.category);
@@ -101,7 +101,7 @@ const UpdateProduct = () => {
         return;
       }
       const { data } = await axios.delete(
-        `http://localhost:8080/api/v1/product/product/${product._id}`,
+        `${import.meta.env.VITE_START}/api/v1/product/product/${product._id}`,
         product
       );
       if (data?.success) {
@@ -128,7 +128,7 @@ const UpdateProduct = () => {
       form.append("shipping", product.shipping);
       form.append("quantity", product.quantity);
       const { data } = await axios.put(
-        `http://localhost:8080/api/v1/product/update-product/${product._id}`,
+        `${import.meta.env.VITE_START}/api/v1/product/update-product/${product._id}`,
         form
       );
       if (data?.success) {

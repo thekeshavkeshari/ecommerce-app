@@ -19,7 +19,7 @@ const FloatingSearchButton = () => {
     try {
       console.log("Searching for:", searchText);
       const { data } = await axios.get(
-        `http://localhost:8080/api/v1/product/search/${searchText.keyword}`
+        `${import.meta.env.VITE_START}/api/v1/product/search/${searchText.keyword}`
       );
       console.log(data.product);
       setSearchText({ ...searchText, results: data.product });

@@ -21,7 +21,7 @@ export default function Register() {
     try {
       const { name, email, password, phone, address, question } = state;
       const res = await axios.post(
-        `${"http://localhost:8080"}/api/v1/auth/register`,
+        `${import.meta.env.VITE_START}/api/v1/auth/register`,
         { name, email, password, phone, address, question }
       );
 

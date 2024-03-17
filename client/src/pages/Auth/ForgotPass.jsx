@@ -35,7 +35,7 @@ export default function Login() {
     try {
       const { email, password, question } = state;
       const res = await axios.post(
-        `${"http://localhost:8080"}/api/v1/auth/forgotpassword`,
+        `${import.meta.env.VITE_START}/api/v1/auth/forgotpassword`,
         { email, password, question }
       );
 

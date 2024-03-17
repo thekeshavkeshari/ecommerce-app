@@ -24,7 +24,7 @@ const CategoryForm = ({ getCategory }) => {
       cat_data.append("categoryTitle", categoryData.categoryTitle);
 
       const { data } = await axios.post(
-        "http://localhost:8080/api/v1/category/create-category",
+        `${import.meta.env.VITE_START}/api/v1/category/create-category`,
         cat_data
       );
       if (data.success) {
