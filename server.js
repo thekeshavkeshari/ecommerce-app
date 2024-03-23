@@ -25,6 +25,9 @@ app.use(morgan('dev'));
 app.use('/api/v1/auth',authRoute);
 app.use('/api/v1/category',categoryRoutes);
 app.use('/api/v1/product',productRoute)
+app.use('/',(req,res)=>{
+    res.send("hi bro backend is still alive");
+})
 
 const PORT = process.env.PORT||8080;
 app.listen(PORT,()=>{
