@@ -1,10 +1,18 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+
+
+// rest object
 const app = express();
 
+// middlewares 
+app.use(cors());
+app.use(morgan('dev'));
+
+
 app.get("/", (req, res) => {
-  res.send("01");
+  res.send("02");
 });
 
 const PORT = process.env.PORT || 5000;
