@@ -15,26 +15,26 @@
 // export default app;
 import  express  from "express";
 // import "dotenv/config";
-import morgan from "morgan";
+// import morgan from "morgan";
 // import connectDB from "./config/db.js";
 // import authRoute from "./routes/authRoute.js"
-import cors from "cors"; 
+// import cors from "cors"; 
 // import categoryRoutes from './routes/categoryRoutes.js'
 // import productRoute from './routes/productRoute.js'
 
 
 // connect database
 
-connectDB();
+// connectDB();
 
 // rest object 
 const app = express();
 
 // middlewares 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({extended:true}));
-app.use(morgan('dev'));
+// app.use(cors());
+// app.use(express.json());
+// app.use(express.urlencoded({extended:true}));
+// app.use(morgan('dev'));
 
 //routes
 // app.use('/api/v1/auth',authRoute);
