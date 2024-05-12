@@ -1,6 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import connectDB from "./config/db.js";
 
 
 // rest object
@@ -12,9 +13,13 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
+// connect database
+
+connectDB();
+
 
 app.get("/", (req, res) => {
-  res.send("03");
+  res.send("04");
 });
 
 const PORT = process.env.PORT || 5000;
