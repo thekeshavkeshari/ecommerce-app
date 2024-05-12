@@ -1,7 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import mongoose from "mongoose";
+// import mongoose from "mongoose";
 // import connectDB from "./config/db.js";
 // import authRoute from "./routes/authRoute.js"
 // import categoryRoutes from './routes/categoryRoutes.js'
