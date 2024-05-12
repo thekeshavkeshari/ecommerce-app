@@ -2,7 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import mongoose from "mongoose";
-// import connectDB from "./config/db.js";
+import connectDB from "./config/db.js";
 // import authRoute from "./routes/authRoute.js"
 // import categoryRoutes from './routes/categoryRoutes.js'
 // import productRoute from './routes/productRoute.js'
@@ -29,7 +29,7 @@ app.use(express.urlencoded({extended:true}));
 //     }
 // } 
 
-// connectDB();
+connectDB();
 
 //routes
 // app.use('/api/v1/auth',authRoute);
