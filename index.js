@@ -36,7 +36,7 @@ app.use(express.urlencoded({extended:true}));
 // app.use('/api/v1/category',categoryRoutes);
 // app.use('/api/v1/product',productRoute);
 app.get("/", (req, res) => {
-  res.send("Database is connected 06 mongoose package hatane par");
+  res.send(`Database is connected 06 mongoose package hatane par mongodb ka url : ${process.env.URI}`);
 });
 
 const PORT = process.env.PORT || 5000;
