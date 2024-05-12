@@ -1,6 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import mongoose from "mongoose";
 // import connectDB from "./config/db.js";
 // import authRoute from "./routes/authRoute.js"
 // import categoryRoutes from './routes/categoryRoutes.js'
@@ -18,15 +19,24 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
 // connect database
+const connectDB = async ()=>{
+    try {
+        // console.log(process.env.URI);
+        const conn = await mongoose.connect(process.env.URI);
+        console.log(`server is conncted to DB host ${conn.connection.host}`);
+    } catch (error) {
+        console.log(error)
+    }
+} 
 
-// connectDB();
+connectDB();
 
 //routes
 // app.use('/api/v1/auth',authRoute);
 // app.use('/api/v1/category',categoryRoutes);
 // app.use('/api/v1/product',productRoute);
 app.get("/", (req, res) => {
-  res.send("05");
+  res.send("Database is connected 06");
 });
 
 const PORT = process.env.PORT || 5000;
