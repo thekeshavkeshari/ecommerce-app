@@ -1,7 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import mongoose from "mongoose";
+// import mongoose from "mongoose";
 // import connectDB from "./config/db.js";
 // import authRoute from "./routes/authRoute.js"
 // import categoryRoutes from './routes/categoryRoutes.js'
@@ -36,7 +36,7 @@ app.use(express.urlencoded({extended:true}));
 // app.use('/api/v1/category',categoryRoutes);
 // app.use('/api/v1/product',productRoute);
 app.get("/", (req, res) => {
-  res.send("Database is connected 06");
+  res.send("Database is connected 06 mongoose package hatane par");
 });
 
 const PORT = process.env.PORT || 5000;
