@@ -6,6 +6,7 @@ import connectDB from "./config/db.js";
 import authRoute from "./routes/authRoute.js"
 import categoryRoutes from './routes/categoryRoutes.js'
 import productRoute from './routes/productRoute.js'
+import "dotenv/config";
 
 
 
@@ -26,7 +27,7 @@ app.use('/api/v1/auth',authRoute);
 app.use('/api/v1/category',categoryRoutes);
 app.use('/api/v1/product',productRoute);
 app.get("/", (req, res) => {
-  res.send(`Database is connected 07 mongoose package hatane par mongodb ka url : ${process.env.URI}`);
+  res.send(`Render Me Deployed Hai`);
 });
 
 const PORT = process.env.PORT || 5000;
