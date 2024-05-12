@@ -4,7 +4,7 @@ import cors from "cors";
 const app = express();
 
 app.get("/", (req, res) => {
-  res.send("00028532853");
+  res.send("01");
 });
 
 const PORT = process.env.PORT || 5000;
