@@ -1,19 +1,19 @@
-// import express from "express";
+import express from "express";
 
-// const app = express();
+const app = express();
 
-// app.get("/", (req, res) => {
-//   res.send("00028532853");
-// });
+app.get("/", (req, res) => {
+  res.send("00028532853");
+});
 
-// const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}`);
-// });
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
-// export default app;
-import  express  from "express";
+export default app;
+// import  express  from "express";
 // import "dotenv/config";
 // import morgan from "morgan";
 // import connectDB from "./config/db.js";
@@ -28,7 +28,7 @@ import  express  from "express";
 // connectDB();
 
 // rest object 
-const app = express();
+// const app = express();
 
 // middlewares 
 // app.use(cors());
@@ -40,13 +40,13 @@ const app = express();
 // app.use('/api/v1/auth',authRoute);
 // app.use('/api/v1/category',categoryRoutes);
 // app.use('/api/v1/product',productRoute)
-app.use('/',(req,res)=>{
-    res.send("hi bro backend is still alive");
-})
+// app.use('/',(req,res)=>{
+//     res.send("hi bro backend is still alive");
+// })
 
-const PORT = process.env.PORT||8080;
-app.listen(PORT,()=>{
-    console.log(`server is running on ${PORT}`); 
-});
+// const PORT = process.env.PORT||8080;
+// app.listen(PORT,()=>{
+//     console.log(`server is running on ${PORT}`); 
+// });
 
-export default app;    
+// export default app;    
