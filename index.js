@@ -1,7 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import connectDB from "./config/db.js";
+// import connectDB from "./config/db.js";
 
 
 // rest object
@@ -15,7 +15,7 @@ app.use(express.urlencoded({extended:true}));
 
 // connect database
 
-connectDB();
+// connectDB();
 
 
 app.get("/", (req, res) => {
