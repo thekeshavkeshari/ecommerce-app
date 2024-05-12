@@ -3,9 +3,9 @@ import morgan from "morgan";
 import cors from "cors";
 import mongoose from "mongoose";
 import connectDB from "./config/db.js";
-// import authRoute from "./routes/authRoute.js"
-// import categoryRoutes from './routes/categoryRoutes.js'
-// import productRoute from './routes/productRoute.js'
+import authRoute from "./routes/authRoute.js"
+import categoryRoutes from './routes/categoryRoutes.js'
+import productRoute from './routes/productRoute.js'
 
 
 
@@ -19,22 +19,12 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
 // connect database
-// const connectDB = async ()=>{
-//     try {
-//         // console.log(process.env.URI);
-//         const conn = await mongoose.connect(process.env.URI);
-//         console.log(`server is conncted to DB host ${conn.connection.host}`);
-//     } catch (error) {
-//         console.log(error)
-//     }
-// } 
-
 connectDB();
 
 //routes
-// app.use('/api/v1/auth',authRoute);
-// app.use('/api/v1/category',categoryRoutes);
-// app.use('/api/v1/product',productRoute);
+app.use('/api/v1/auth',authRoute);
+app.use('/api/v1/category',categoryRoutes);
+app.use('/api/v1/product',productRoute);
 app.get("/", (req, res) => {
   res.send(`Database is connected 07 mongoose package hatane par mongodb ka url : ${process.env.URI}`);
 });
@@ -46,6 +36,16 @@ app.listen(PORT, () => {
 });
 
 export default app;
+
+
+
+
+
+
+
+
+
+
 // import  express  from "express";
 // import "dotenv/config";
 // import morgan from "morgan";
