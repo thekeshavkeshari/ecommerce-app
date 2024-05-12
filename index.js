@@ -19,17 +19,17 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
 // connect database
-const connectDB = async ()=>{
-    try {
-        // console.log(process.env.URI);
-        const conn = await mongoose.connect(process.env.URI);
-        console.log(`server is conncted to DB host ${conn.connection.host}`);
-    } catch (error) {
-        console.log(error)
-    }
-} 
+// const connectDB = async ()=>{
+//     try {
+//         // console.log(process.env.URI);
+//         const conn = await mongoose.connect(process.env.URI);
+//         console.log(`server is conncted to DB host ${conn.connection.host}`);
+//     } catch (error) {
+//         console.log(error)
+//     }
+// } 
 
-connectDB();
+// connectDB();
 
 //routes
 // app.use('/api/v1/auth',authRoute);
